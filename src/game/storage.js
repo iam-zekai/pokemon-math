@@ -2,6 +2,7 @@
 const BEST_KEY = 'pkmn_math_best'
 const ACHIEVEMENTS_KEY = 'pkmn_math_achievements'
 const SETTINGS_KEY = 'pkmn_math_settings'
+const GYM_KEY = 'pkmn_math_gyms'
 
 export function loadBest() {
   try {
@@ -24,6 +25,9 @@ export const ACHIEVEMENT_DEFS = [
   { id: 'defeat_10', name: '百战百胜', desc: '累计击败10个对手', icon: '⚔️' },
   { id: 'defeat_50', name: '传说训练师', desc: '累计击败50个对手', icon: '👑' },
   { id: 'speed_demon', name: '闪电问答', desc: '在3秒内答对一道困难题', icon: '⚡' },
+  { id: 'first_badge', name: '初出茅庐', desc: '获得第一个道馆徽章', icon: '🔰' },
+  { id: 'four_badges', name: '半程冠军', desc: '获得4个道馆徽章', icon: '🎖️' },
+  { id: 'all_badges', name: '数学冠军', desc: '获得全部8个道馆徽章', icon: '👑' },
 ]
 
 export function loadAchievements() {
@@ -53,4 +57,16 @@ export function loadSettings() {
 
 export function saveSettings(settings) {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch (e) { /* ignore */ }
+}
+
+// Gym progress
+export function loadGymProgress() {
+  try {
+    const d = JSON.parse(localStorage.getItem(GYM_KEY) || '{}')
+    return { badges: d.badges || [] }
+  } catch (e) { return { badges: [] } }
+}
+
+export function saveGymProgress(progress) {
+  try { localStorage.setItem(GYM_KEY, JSON.stringify(progress)) } catch (e) { /* ignore */ }
 }

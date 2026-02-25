@@ -47,17 +47,25 @@ body {
 #title-screen .subtitle { font-family: var(--font-math); font-weight: 700; font-size: 14px; color: #a5b4fc; margin-bottom: 12px; letter-spacing: 2px; }
 .best-score { font-family: var(--font-math); font-size: 11px; color: #94a3b8; margin-bottom: 8px; }
 .best-score span { color: #fbbf24; font-weight: 700; }
-.achievement-summary { font-family: var(--font-math); font-size: 11px; color: #94a3b8; margin-bottom: 24px; }
+.achievement-summary { font-family: var(--font-math); font-size: 11px; color: #94a3b8; margin-bottom: 16px; }
 .achievement-summary span { color: #fbbf24; font-weight: 700; }
+.title-buttons { display: flex; flex-direction: column; gap: 10px; align-items: center; }
 .start-btn {
-  font-family: 'Press Start 2P', monospace; font-size: 13px; color: #fff;
+  font-family: 'Press Start 2P', monospace; font-size: 11px; color: #fff;
   background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none;
-  padding: 16px 44px; cursor: pointer; border-radius: 12px;
+  padding: 14px 36px; cursor: pointer; border-radius: 12px;
   box-shadow: 0 4px 0 #4338ca, 0 6px 20px rgba(99,102,241,0.4);
   animation: pulse-btn 2s ease-in-out infinite;
   transition: transform 0.1s;
 }
+.start-btn.gym-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 4px 0 #b45309, 0 6px 20px rgba(245,158,11,0.4);
+}
 .start-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #4338ca; }
+.badge-case { display: flex; gap: 6px; margin-top: 12px; }
+.badge-case .badge-slot { font-size: 20px; opacity: 0.2; filter: grayscale(1); }
+.badge-case .badge-slot.earned { opacity: 1; filter: none; }
 @keyframes pulse-btn {
   0%,100% { box-shadow: 0 4px 0 #4338ca, 0 6px 20px rgba(99,102,241,0.4); }
   50% { box-shadow: 0 4px 0 #4338ca, 0 6px 30px rgba(99,102,241,0.7); }
@@ -67,37 +75,37 @@ body {
 #select-screen {
   position: absolute; inset: 0; display: none; flex-direction: column; align-items: center;
   background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
-  z-index: 90; padding: 16px; overflow-y: auto;
+  z-index: 90; padding: 12px; overflow-y: auto;
 }
-#select-screen h2 { font-family: var(--font-math); font-weight: 700; font-size: 16px; color: #fbbf24; margin: 12px 0 8px; }
+#select-screen h2 { font-family: var(--font-math); font-weight: 700; font-size: 18px; color: #fbbf24; margin: 8px 0 6px; }
 
 /* Difficulty selector */
-.difficulty-selector { display: flex; gap: 6px; margin-bottom: 14px; }
+.difficulty-selector { display: flex; gap: 8px; margin-bottom: 10px; }
 .diff-btn {
-  font-family: var(--font-math); font-weight: 700; font-size: 12px; color: #94a3b8;
+  font-family: var(--font-math); font-weight: 700; font-size: 14px; color: #94a3b8;
   background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.12);
-  padding: 8px 16px; cursor: pointer; border-radius: 8px; transition: all 0.2s;
+  padding: 10px 20px; cursor: pointer; border-radius: 8px; transition: all 0.2s;
 }
 .diff-btn:hover { border-color: rgba(255,255,255,0.3); }
 .diff-btn.active {
   border-color: #fbbf24; background: rgba(251,191,36,0.15); color: #fbbf24;
 }
 
-.pokemon-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; width: 100%; max-width: 360px; }
+.pokemon-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; width: 100%; }
 .pokemon-card {
   background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.12);
-  border-radius: 12px; padding: 8px 4px; text-align: center; cursor: pointer; transition: all 0.2s;
+  border-radius: 12px; padding: 14px 6px; text-align: center; cursor: pointer; transition: all 0.2s;
 }
 .pokemon-card:hover,.pokemon-card.selected {
-  border-color: #fbbf24; background: rgba(251,191,36,0.12); transform: scale(1.05);
+  border-color: #fbbf24; background: rgba(251,191,36,0.12); transform: scale(1.03);
 }
 .pokemon-card img {
-  width: 64px; height: 64px; image-rendering: pixelated;
+  width: 96px; height: 96px; image-rendering: pixelated;
   background: rgba(255,255,255,0.03); border-radius: 8px;
 }
-.pokemon-card .name { font-family: var(--font-math); font-weight: 700; font-size: 12px; color: #e2e8f0; display: block; margin: 4px 0 2px; }
-.pokemon-card .type-badge { font-size: 6px; color: #fff; padding: 2px 5px; border-radius: 4px; }
-.pokemon-card .stats-preview { font-size: 5px; color: #94a3b8; margin-top: 3px; display: block; line-height: 1.5; }
+.pokemon-card .name { font-family: var(--font-math); font-weight: 700; font-size: 16px; color: #e2e8f0; display: block; margin: 6px 0 3px; }
+.pokemon-card .type-badge { font-size: 9px; color: #fff; padding: 3px 8px; border-radius: 4px; }
+.pokemon-card .stats-preview { font-size: 9px; color: #94a3b8; margin-top: 4px; display: block; line-height: 1.5; }
 .confirm-btn {
   font-family: 'Press Start 2P', monospace; font-size: 11px; color: #fff;
   background: linear-gradient(135deg, #22c55e, #16a34a); border: none;
@@ -243,20 +251,20 @@ body {
   min-height: 44px; display: flex; align-items: center;
 }
 
-.skill-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.skill-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .skill-btn {
-  font-family: 'Press Start 2P', monospace; font-size: 7px; color: #fff;
-  border: none; padding: 10px 6px; cursor: pointer; border-radius: 8px;
+  font-family: 'Press Start 2P', monospace; font-size: 10px; color: #fff;
+  border: none; padding: 14px 10px; cursor: pointer; border-radius: 10px;
   transition: all 0.1s; line-height: 1.4; text-align: center;
   background: linear-gradient(135deg, #4b5563, #374151);
   box-shadow: 0 3px 0 #1f2937;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
 }
 .skill-btn:active { transform: translateY(3px); box-shadow: none !important; }
 .skill-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.skill-btn .skill-icon { font-size: 16px; font-family: sans-serif; line-height: 1; }
-.skill-btn .skill-name { font-family: var(--font-math); font-weight: 700; font-size: 11px; }
-.skill-btn .skill-dmg { font-family: var(--font-math); font-size: 9px; opacity: 0.7; }
+.skill-btn .skill-icon { font-size: 24px; font-family: sans-serif; line-height: 1; }
+.skill-btn .skill-name { font-family: var(--font-math); font-weight: 700; font-size: 17px; }
+.skill-btn .skill-dmg { font-family: var(--font-math); font-size: 14px; opacity: 0.7; }
 .skill-btn .skill-type-dot {
   display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 3px; vertical-align: middle;
 }
@@ -359,6 +367,88 @@ body {
 .ach-icon { font-size: 24px; }
 .ach-title { font-family: var(--font-math); font-size: 10px; color: #92400e; }
 .ach-name { font-family: var(--font-math); font-size: 13px; font-weight: 700; }
+
+/* ===== Gym Map ===== */
+#gym-map-screen {
+  position: absolute; inset: 0; display: none; flex-direction: column; align-items: center;
+  background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
+  z-index: 90; padding: 12px; overflow-y: auto;
+}
+#gym-map-screen h2 { font-family: var(--font-math); font-weight: 700; font-size: 18px; color: #fbbf24; margin: 8px 0 12px; }
+.gym-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.gym-card {
+  background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.12);
+  border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 12px;
+}
+.gym-card:hover:not(.locked) { border-color: #fbbf24; background: rgba(251,191,36,0.08); }
+.gym-card.locked { opacity: 0.4; cursor: not-allowed; }
+.gym-card.cleared { border-color: #22c55e; background: rgba(34,197,94,0.08); }
+.gym-badge { font-size: 28px; min-width: 36px; text-align: center; }
+.gym-card.locked .gym-badge { filter: grayscale(1); }
+.gym-info { flex: 1; }
+.gym-info .gym-name { font-family: var(--font-math); font-weight: 700; font-size: 14px; color: #e2e8f0; }
+.gym-info .gym-topics { font-family: var(--font-math); font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.gym-info .gym-leader { font-family: var(--font-math); font-size: 11px; color: #a5b4fc; margin-top: 2px; }
+.gym-status { font-size: 10px; color: #94a3b8; font-family: var(--font-math); }
+.gym-card.cleared .gym-status { color: #22c55e; }
+.back-btn {
+  font-family: var(--font-math); font-weight: 700; font-size: 14px; color: #94a3b8;
+  background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.12);
+  padding: 10px 24px; cursor: pointer; border-radius: 8px; margin-top: 12px;
+  transition: all 0.2s;
+}
+.back-btn:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+
+/* ===== Dialogue ===== */
+#dialogue-overlay {
+  position: absolute; inset: 0; z-index: 50; display: none;
+  background: rgba(0,0,0,0.5);
+  flex-direction: column; justify-content: flex-end; padding: 10px;
+  cursor: pointer;
+}
+.dialogue-box {
+  width: 100%; background: linear-gradient(135deg, rgba(255,255,255,0.97), rgba(245,245,245,0.97));
+  border: 3px solid #374151; border-radius: 12px; padding: 14px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.dialogue-avatar { font-size: 32px; line-height: 1; }
+.dialogue-content { flex: 1; }
+.dialogue-name { font-family: var(--font-math); font-weight: 700; font-size: 12px; color: #6366f1; margin-bottom: 4px; }
+.dialogue-text { font-family: var(--font-math); font-size: 14px; color: #1f2937; line-height: 1.6; }
+.dialogue-tap { font-family: var(--font-math); font-size: 10px; color: rgba(255,255,255,0.5); text-align: center; margin-top: 6px; animation: pulse-btn 2s infinite; }
+
+/* ===== Event Popup ===== */
+#event-overlay {
+  position: absolute; inset: 0; z-index: 55; display: none;
+  background: rgba(0,0,0,0.6);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.event-card {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 3px solid #f59e0b; border-radius: 16px; padding: 24px;
+  text-align: center; max-width: 280px; width: 100%;
+  animation: event-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes event-pop { 0%{transform:scale(0.5);opacity:0}100%{transform:scale(1);opacity:1} }
+.event-icon { font-size: 48px; margin-bottom: 8px; }
+.event-name { font-family: var(--font-math); font-weight: 700; font-size: 16px; color: #92400e; margin-bottom: 6px; }
+.event-desc { font-family: var(--font-math); font-size: 13px; color: #78350f; line-height: 1.6; margin-bottom: 14px; }
+.event-btn {
+  font-family: var(--font-math); font-weight: 700; font-size: 14px;
+  background: #f59e0b; color: #fff; border: none; padding: 10px 28px;
+  border-radius: 8px; cursor: pointer; box-shadow: 0 3px 0 #b45309;
+  transition: transform 0.1s;
+}
+.event-btn:active { transform: translateY(3px); box-shadow: none; }
+
+/* ===== Badge Earned ===== */
+.badge-earned {
+  font-family: var(--font-math); font-weight: 700; font-size: 14px;
+  color: #fbbf24; text-align: center; margin: 6px 0;
+  animation: pulse-btn 1s infinite;
+}
+.badge-earned .badge-icon { font-size: 32px; display: block; margin-bottom: 4px; }
 
 /* ===== Responsive ===== */
 @media(max-height:700px){

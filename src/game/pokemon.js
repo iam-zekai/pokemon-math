@@ -1,75 +1,77 @@
 // Player-selectable Pokemon
+// Skill power/acc reference authentic game values, scaled for this game's balance
+// power roughly = original_power * 0.5~0.6, acc stays authentic
 export const POKEMON = [
   {
     name: '皮卡丘', id: 25, type: 'electric', hp: 110, skills: [
-      { name: '电击', type: 'electric', power: 25, acc: 100 },
-      { name: '十万伏特', type: 'electric', power: 50, acc: 90 },
-      { name: '电光一闪', type: 'normal', power: 30, acc: 100 },
-      { name: '打雷', type: 'electric', power: 70, acc: 70 },
+      { name: '电击', type: 'electric', power: 20, acc: 100 },       // 原作40/100
+      { name: '十万伏特', type: 'electric', power: 50, acc: 100 },   // 原作90/100
+      { name: '电光一闪', type: 'normal', power: 20, acc: 100 },     // 原作40/100 先制
+      { name: '打雷', type: 'electric', power: 65, acc: 70 },        // 原作110/70
     ]
   },
   {
     name: '喷火龙', id: 6, type: 'fire', hp: 120, skills: [
-      { name: '火花', type: 'fire', power: 25, acc: 100 },
-      { name: '火焰喷射', type: 'fire', power: 50, acc: 90 },
-      { name: '龙之怒', type: 'dragon', power: 40, acc: 100 },
-      { name: '大字爆炎', type: 'fire', power: 75, acc: 70 },
+      { name: '火花', type: 'fire', power: 20, acc: 100 },           // 原作40/100
+      { name: '喷射火焰', type: 'fire', power: 50, acc: 100 },      // 原作90/100
+      { name: '龙之怒', type: 'dragon', power: 40, acc: 100 },       // 原作固定40伤害/100
+      { name: '大字爆炎', type: 'fire', power: 65, acc: 85 },        // 原作110/85
     ]
   },
   {
     name: '水箭龟', id: 9, type: 'water', hp: 140, skills: [
-      { name: '水枪', type: 'water', power: 25, acc: 100 },
-      { name: '水炮', type: 'water', power: 55, acc: 85 },
-      { name: '冰冻光线', type: 'ice', power: 45, acc: 90 },
-      { name: '破坏光线', type: 'normal', power: 80, acc: 65 },
+      { name: '水枪', type: 'water', power: 20, acc: 100 },          // 原作40/100
+      { name: '冲浪', type: 'water', power: 50, acc: 100 },          // 原作90/100
+      { name: '冰冻光线', type: 'ice', power: 50, acc: 100 },        // 原作90/100
+      { name: '水炮', type: 'water', power: 65, acc: 80 },           // 原作110/80
     ]
   },
   {
     name: '妙蛙花', id: 3, type: 'grass', hp: 130, skills: [
-      { name: '藤鞭', type: 'grass', power: 25, acc: 100 },
-      { name: '飞叶快刀', type: 'grass', power: 45, acc: 95 },
-      { name: '寄生种子', type: 'grass', power: 35, acc: 90, heal: true },
-      { name: '日光束', type: 'grass', power: 70, acc: 75 },
+      { name: '藤鞭', type: 'grass', power: 23, acc: 100 },          // 原作45/100
+      { name: '飞叶快刀', type: 'grass', power: 28, acc: 95 },       // 原作55/95
+      { name: '寄生种子', type: 'grass', power: 0, acc: 90, heal: true, healFlat: 30 }, // 原作吸血效果
+      { name: '日光束', type: 'grass', power: 65, acc: 100 },        // 原作120/100 需蓄力
     ]
   },
   {
     name: '超梦', id: 150, type: 'psychic', hp: 100, skills: [
-      { name: '念力', type: 'psychic', power: 30, acc: 100 },
-      { name: '精神强念', type: 'psychic', power: 55, acc: 90 },
-      { name: '暗影球', type: 'ghost', power: 45, acc: 95 },
-      { name: '精神击破', type: 'psychic', power: 75, acc: 70 },
+      { name: '念力', type: 'psychic', power: 25, acc: 100 },        // 原作50/100
+      { name: '精神强念', type: 'psychic', power: 50, acc: 100 },    // 原作90/100
+      { name: '暗影球', type: 'ghost', power: 40, acc: 100 },        // 原作80/100
+      { name: '精神击破', type: 'psychic', power: 65, acc: 100 },    // 原作120/100 降特防
     ]
   },
   {
     name: '耿鬼', id: 94, type: 'ghost', hp: 95, skills: [
-      { name: '舌舔', type: 'ghost', power: 25, acc: 100 },
-      { name: '暗影球', type: 'ghost', power: 50, acc: 90 },
-      { name: '催眠术', type: 'psychic', power: 35, acc: 85 },
-      { name: '灭亡之歌', type: 'ghost', power: 70, acc: 70 },
+      { name: '舌舔', type: 'ghost', power: 15, acc: 100 },          // 原作30/100
+      { name: '暗影球', type: 'ghost', power: 40, acc: 100 },        // 原作80/100
+      { name: '污泥炸弹', type: 'poison', power: 50, acc: 100 },     // 原作90/100
+      { name: '灭亡之歌', type: 'ghost', power: 70, acc: 70 },       // 原作特殊技/—
     ]
   },
   {
     name: '卡比兽', id: 143, type: 'normal', hp: 180, skills: [
-      { name: '撞击', type: 'normal', power: 25, acc: 100 },
-      { name: '泰山压顶', type: 'normal', power: 50, acc: 90 },
-      { name: '睡觉', type: 'psychic', power: 0, acc: 100, heal: true, healFlat: 60 },
-      { name: '破坏光线', type: 'normal', power: 80, acc: 65 },
+      { name: '撞击', type: 'normal', power: 20, acc: 100 },         // 原作40/100
+      { name: '泰山压顶', type: 'normal', power: 43, acc: 100 },     // 原作85/100
+      { name: '睡觉', type: 'psychic', power: 0, acc: 100, heal: true, healFlat: 80 }, // 原作回满/睡2回合
+      { name: '破坏光线', type: 'normal', power: 75, acc: 90 },      // 原作150/90 需休息
     ]
   },
   {
     name: '路卡利欧', id: 448, type: 'fighting', hp: 105, skills: [
-      { name: '真空波', type: 'fighting', power: 30, acc: 100 },
-      { name: '波导弹', type: 'fighting', power: 50, acc: 90 },
-      { name: '骨头棒', type: 'fighting', power: 40, acc: 95 },
-      { name: '近身战', type: 'fighting', power: 75, acc: 70 },
+      { name: '真空波', type: 'fighting', power: 20, acc: 100 },     // 原作40/100 先制
+      { name: '波导弹', type: 'fighting', power: 40, acc: 100 },     // 原作80/必中
+      { name: '金属爪', type: 'steel', power: 25, acc: 95 },         // 原作50/95
+      { name: '近身战', type: 'fighting', power: 60, acc: 100 },     // 原作120/100 降双防
     ]
   },
   {
     name: '沙奈朵', id: 282, type: 'fairy', hp: 100, skills: [
-      { name: '魅惑之声', type: 'fairy', power: 30, acc: 100 },
-      { name: '月亮之力', type: 'fairy', power: 50, acc: 90 },
-      { name: '精神强念', type: 'psychic', power: 45, acc: 90 },
-      { name: '梦幻之光', type: 'fairy', power: 70, acc: 75 },
+      { name: '魅惑之声', type: 'fairy', power: 20, acc: 100 },      // 原作40/必中
+      { name: '月亮之力', type: 'fairy', power: 48, acc: 100 },      // 原作95/100
+      { name: '精神强念', type: 'psychic', power: 50, acc: 100 },    // 原作90/100
+      { name: '未来预知', type: 'psychic', power: 60, acc: 100 },    // 原作120/100 延迟
     ]
   },
 ]

@@ -25,8 +25,18 @@
     <h1>POKEMON<br>MATH BATTLE</h1>
     <p class="subtitle">高中数学对战！</p>
     <p class="best-score" id="best-score"></p>
-    <p class="achievement-summary">成就: <span id="achievement-count">0/8</span></p>
-    <button class="start-btn" onclick="showSelectScreen()">START</button>
+    <p class="achievement-summary">成就: <span id="achievement-count">0/11</span></p>
+    <div class="title-buttons">
+      <button class="start-btn" onclick="showSelectScreen()">QUICK BATTLE</button>
+      <button class="start-btn gym-btn" onclick="showGymMap()">GYM CHALLENGE</button>
+    </div>
+    <div class="badge-case" id="badge-case"></div>
+  </div>
+
+  <div id="gym-map-screen">
+    <h2>道馆挑战</h2>
+    <div class="gym-list" id="gym-list"></div>
+    <button class="back-btn" onclick="backToTitle()">返回</button>
   </div>
 
   <div id="select-screen">
@@ -72,6 +82,24 @@
       <img class="player-pokemon" id="player-sprite" src="" alt="">
       <canvas id="fx-canvas"></canvas>
     </div>
+    <div id="dialogue-overlay">
+      <div class="dialogue-box">
+        <div class="dialogue-avatar" id="dialogue-avatar"></div>
+        <div class="dialogue-content">
+          <div class="dialogue-name" id="dialogue-name"></div>
+          <div class="dialogue-text" id="dialogue-text"></div>
+        </div>
+      </div>
+      <div class="dialogue-tap">点击继续...</div>
+    </div>
+    <div id="event-overlay">
+      <div class="event-card">
+        <div class="event-icon" id="event-icon"></div>
+        <div class="event-name" id="event-name"></div>
+        <div class="event-desc" id="event-desc"></div>
+        <button class="event-btn" id="event-btn">好的！</button>
+      </div>
+    </div>
     <div class="battle-ui">
       <div class="message-box" id="message-box">选择技能！</div>
       <div class="timer-bar-container" id="timer-container" style="display:none">
@@ -93,6 +121,7 @@
   <div id="result-screen">
     <div class="result-emoji" id="result-emoji"></div>
     <h2 id="result-title"></h2>
+    <div id="badge-earned" class="badge-earned" style="display:none"></div>
     <div id="new-record" class="new-record" style="display:none"></div>
     <div class="result-achievements" id="result-achievements"></div>
     <div class="stats-box">

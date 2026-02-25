@@ -1,9 +1,11 @@
 import { spr, sprBack, sprFallback, sprBackFallback, imgFallback, TYPE_COLORS, TYPE_ICONS, getTypeMultiplier } from './constants.js'
 import { POKEMON, ENEMIES } from './pokemon.js'
 import { Q_BANK } from './questions.js'
+import { GYMS } from './gyms.js'
+import { EVENTS, pickRandomEvent } from './events.js'
 import { SFX } from './sound.js'
 import { FX } from './fx.js'
-import { loadBest, saveBest, loadSettings, saveSettings, saveAchievement, ACHIEVEMENT_DEFS, loadAchievements } from './storage.js'
+import { loadBest, saveBest, loadSettings, saveSettings, saveAchievement, ACHIEVEMENT_DEFS, loadAchievements, loadGymProgress, saveGymProgress } from './storage.js'
 import { shuffle, randInt, sleep } from './utils.js'
 
 // Difficulty presets
@@ -30,6 +32,14 @@ let st = {
   difficulty: 'normal',
   goalEnemies: 5,
   paused: false,
+  // Gym mode
+  mode: 'quick', // 'quick' | 'gym'
+  gymId: null,
+  gymStep: 0, // 0..trainers-1 = trainers, trainers = leader
+  gymData: null,
+  isLeaderFight: false,
+  _nextEnemyBuff: null,
+  _nextEnemyReward: null,
 }
 
 // ===================================================================
@@ -103,6 +113,121 @@ function tryAchievement(id) {
 }
 
 // ===================================================================
+// DIALOGUE SYSTEM
+// ===================================================================
+function showDialogue(speaker, avatar, lines, callback) {
+  const overlay = $('dialogue-overlay')
+  overlay.style.display = 'flex'
+  $('dialogue-name').textContent = speaker
+  $('dialogue-avatar').textContent = avatar
+  let idx = 0
+
+  function showLine() {
+    if (idx >= lines.length) {
+      overlay.style.display = 'none'
+      overlay.onclick = null
+      callback()
+      return
+    }
+    $('dialogue-text').textContent = lines[idx]
+    idx++
+  }
+
+  overlay.onclick = () => { SFX.play('select'); showLine() }
+  showLine()
+}
+
+// ===================================================================
+// EVENT POPUP SYSTEM
+// ===================================================================
+function showEventPopup(event) {
+  return new Promise(resolve => {
+    const overlay = $('event-overlay')
+    overlay.style.display = 'flex'
+    $('event-icon').textContent = event.icon
+    $('event-name').textContent = event.name
+    $('event-desc').textContent = event.desc
+
+    const btn = $('event-btn')
+    btn.textContent = event.isChallenge ? '接受挑战！' : '好的！'
+    btn.onclick = () => {
+      SFX.play('select')
+      overlay.style.display = 'none'
+      if (event.effect) event.effect(st)
+      updateUI()
+      resolve(event)
+    }
+  })
+}
+
+async function handleRandomEvent() {
+  if (st.isLeaderFight) return
+  if (Math.random() > 0.3) return
+
+  const event = pickRandomEvent()
+
+  if (event.isChallenge) {
+    // Challenge event: show a bonus question
+    event.desc = '一位神秘训练师提出挑战！答对回复25%HP，答错扣15%HP！'
+    await showEventPopup(event)
+    await handleChallengeQuestion()
+    return
+  }
+
+  await showEventPopup(event)
+}
+
+function handleChallengeQuestion() {
+  return new Promise(resolve => {
+    const q = getQuestion()
+    const opts = shuffle([q.a, ...q.w])
+
+    $('skill-panel').style.display = 'none'
+    const panel = $('question-panel')
+    panel.style.display = 'flex'
+    $('question-text').textContent = q.q
+    $('explain-box').style.display = 'none'
+    $('question-category').textContent = q.cat || '挑战'
+    $('question-diff').textContent = '❓ 挑战'
+
+    const grid = $('answer-grid'); grid.innerHTML = ''
+    opts.forEach(opt => {
+      const btn = document.createElement('button')
+      btn.className = 'answer-btn'; btn.textContent = opt
+      btn.onclick = () => {
+        document.querySelectorAll('.answer-btn').forEach(b => { b.onclick = null })
+        document.querySelectorAll('.answer-btn').forEach(b => {
+          if (b.textContent === q.a) b.classList.add('correct')
+          else if (b === btn && opt !== q.a) b.classList.add('wrong')
+        })
+
+        if (opt === q.a) {
+          SFX.play('correct')
+          const heal = Math.floor(st.pMaxHP * 0.25)
+          st.pHP = Math.min(st.pMaxHP, st.pHP + heal)
+          msg(`答对了！恢复${heal}HP！`)
+          tryAchievement('challenge_win')
+        } else {
+          SFX.play('wrong')
+          const dmg = Math.floor(st.pMaxHP * 0.15)
+          st.pHP = Math.max(1, st.pHP - dmg)
+          msg(`答错了！失去${dmg}HP...`)
+        }
+        updateUI()
+
+        setTimeout(() => {
+          panel.style.display = 'none'
+          $('skill-panel').style.display = 'grid'
+          msg('选择技能！')
+          resolve()
+        }, 1200)
+      }
+      grid.appendChild(btn)
+    })
+  })
+}
+
+// ===================================================================
 // SCREENS
 // ===================================================================
 export function showBestScore() {
@@ -121,17 +246,33 @@ export function showBestScore() {
   if (achEl) {
     achEl.textContent = `${unlocked}/${ACHIEVEMENT_DEFS.length}`
   }
+
+  // Show badge case
+  const badgeCase = $('badge-case')
+  if (badgeCase) {
+    const gymProg = loadGymProgress()
+    badgeCase.innerHTML = ''
+    GYMS.forEach(gym => {
+      const slot = document.createElement('span')
+      slot.className = 'badge-slot' + (gymProg.badges.includes(gym.id) ? ' earned' : '')
+      slot.textContent = gym.leader.badge
+      slot.title = gym.leader.badgeName
+      badgeCase.appendChild(slot)
+    })
+  }
 }
 
 export function showSelectScreen() {
   SFX.init()
   SFX.play('select')
+  st.mode = 'quick'
 
   // Read difficulty setting
   const settings = loadSettings()
   st.difficulty = settings.difficulty || 'normal'
 
   $('title-screen').style.display = 'none'
+  $('gym-map-screen').style.display = 'none'
   $('select-screen').style.display = 'flex'
   const g = $('pokemon-grid'); g.innerHTML = ''
   POKEMON.forEach((p, i) => {
@@ -148,8 +289,90 @@ export function showSelectScreen() {
     g.appendChild(d)
   })
 
-  // Difficulty selector
+  // Difficulty selector - show in quick mode
+  document.querySelector('.difficulty-selector').style.display = st.mode === 'quick' ? 'flex' : 'none'
   updateDifficultyUI()
+}
+
+// ===================================================================
+// GYM MAP
+// ===================================================================
+export function showGymMap() {
+  SFX.init()
+  SFX.play('select')
+  $('title-screen').style.display = 'none'
+  $('gym-map-screen').style.display = 'flex'
+
+  const gymProg = loadGymProgress()
+  const list = $('gym-list')
+  list.innerHTML = ''
+
+  GYMS.forEach((gym, i) => {
+    const isCleared = gymProg.badges.includes(gym.id)
+    const isUnlocked = i === 0 || gymProg.badges.includes(GYMS[i - 1].id)
+
+    const card = document.createElement('div')
+    card.className = 'gym-card' + (isCleared ? ' cleared' : '') + (!isUnlocked ? ' locked' : '')
+    card.innerHTML = `
+      <div class="gym-badge">${gym.leader.badge}</div>
+      <div class="gym-info">
+        <div class="gym-name">${gym.id}. ${gym.name}</div>
+        <div class="gym-topics">${gym.topics.join(' / ')}</div>
+        <div class="gym-leader">馆主: ${gym.leader.name}</div>
+      </div>
+      <div class="gym-status">${isCleared ? '已通关' : isUnlocked ? '挑战' : '🔒'}</div>
+    `
+
+    if (isUnlocked && !isCleared) {
+      card.onclick = () => selectGym(i)
+    } else if (isCleared) {
+      // Allow replay
+      card.onclick = () => selectGym(i)
+    }
+
+    list.appendChild(card)
+  })
+}
+
+function selectGym(gymIndex) {
+  SFX.play('select')
+  st.mode = 'gym'
+  st.gymId = gymIndex
+  st.gymData = GYMS[gymIndex]
+  st.gymStep = 0
+  st.isLeaderFight = false
+  st.difficulty = 'normal' // Gym uses its own scaling
+
+  $('gym-map-screen').style.display = 'none'
+  $('select-screen').style.display = 'flex'
+
+  const g = $('pokemon-grid'); g.innerHTML = ''
+  POKEMON.forEach((p, i) => {
+    const d = document.createElement('div'); d.className = 'pokemon-card'
+    const cardImg = document.createElement('img')
+    cardImg.src = spr(p.id)
+    cardImg.alt = p.name
+    imgFallback(cardImg, sprFallback(p.id))
+    d.appendChild(cardImg)
+    d.insertAdjacentHTML('beforeend', `<span class="name">${p.name}</span>
+      <span class="type-badge" style="background:${TYPE_COLORS[p.type]}">${p.type}</span>
+      <span class="stats-preview">HP:${p.hp}</span>`)
+    d.onclick = () => { SFX.play('select'); selPoke(i) }
+    g.appendChild(d)
+  })
+
+  // Hide difficulty selector in gym mode
+  document.querySelector('.difficulty-selector').style.display = 'none'
+  st.selectedIdx = -1
+  $('confirm-btn').style.display = 'none'
+}
+
+export function backToTitle() {
+  SFX.play('select')
+  $('gym-map-screen').style.display = 'none'
+  $('select-screen').style.display = 'none'
+  $('title-screen').style.display = 'flex'
+  showBestScore()
 }
 
 function updateDifficultyUI() {
@@ -180,15 +403,27 @@ export function startBattle() {
   if (st.selectedIdx < 0) return
   SFX.play('select')
   st.player = { ...POKEMON[st.selectedIdx] }
-  const diff = DIFFICULTY[st.difficulty]
   st.pHP = st.player.hp; st.pMaxHP = st.player.hp
   st.round = 1; st.streak = 0; st.maxStreak = 0
   st.correct = 0; st.wrong = 0; st.defeated = 0; st.busy = false
   st.topicStats = {}
   st.statusEffects = { player: [], enemy: [] }
-  st.goalEnemies = diff.goalEnemies
+  st._nextEnemyBuff = null
+  st._nextEnemyReward = null
   usedQuestions = new Set()
-  st.qBank = shuffle([...Q_BANK])
+
+  if (st.mode === 'gym') {
+    // Gym mode: filter questions by gym topics
+    const gymQ = Q_BANK.filter(q => st.gymData.topics.includes(q.cat) && (q.diff || 1) <= st.gymData.maxDiff)
+    // If not enough questions, also include some unfiltered ones
+    const extra = Q_BANK.filter(q => !st.gymData.topics.includes(q.cat) && (q.diff || 1) <= st.gymData.maxDiff)
+    st.qBank = shuffle([...gymQ, ...gymQ, ...extra.slice(0, 10)]) // double gym questions + some extra
+    st.goalEnemies = st.gymData.trainers + 1 // trainers + leader
+  } else {
+    const diff = DIFFICULTY[st.difficulty]
+    st.qBank = shuffle([...Q_BANK])
+    st.goalEnemies = diff.goalEnemies
+  }
 
   // Track used Pokemon for achievement
   const settings = loadSettings()
@@ -212,32 +447,106 @@ export function startBattle() {
   playerSpr.src = sprBack(st.player.id)
   imgFallback(playerSpr, sprBackFallback(st.player.id))
 
-  spawnEnemy()
-  renderSkills()
-  updateUI()
-  msg(`${st.player.name}，就决定是你了！`)
+  if (st.mode === 'gym') {
+    // Show gym intro dialogue
+    $('difficulty-badge').textContent = st.gymData.name
+    spawnEnemy()
+    renderSkills()
+    updateUI()
+    showDialogue('旁白', '📖', st.gymData.intro, () => {
+      msg(`${st.player.name}，就决定是你了！`)
+    })
+  } else {
+    const diff = DIFFICULTY[st.difficulty]
+    $('difficulty-badge').textContent = diff.label
+    spawnEnemy()
+    renderSkills()
+    updateUI()
+    msg(`${st.player.name}，就决定是你了！`)
+  }
 }
 
 function spawnEnemy() {
-  const diff = DIFFICULTY[st.difficulty]
-  const base = ENEMIES[randInt(0, ENEMIES.length - 1)]
-  const lv = Math.min(5 + st.round * 3, 50)
-  const scale = (0.8 + st.round * 0.3) * diff.enemyScale
-  const maxHP = Math.floor(80 * scale)
-  st.enemy = { ...base, lv, atkPow: Math.floor((base.atk + st.round * 2) * diff.enemyScale) }
-  st.eHP = maxHP; st.eMaxHP = maxHP
+  // Check if this is the gym leader fight
+  if (st.mode === 'gym' && st.gymStep >= st.gymData.trainers) {
+    spawnGymLeader()
+    return
+  }
+
+  if (st.mode === 'gym') {
+    // Spawn a gym trainer - use enemies matching gym type, or random
+    const gymTypes = st.gymData.enemyTypes || []
+    let pool = ENEMIES.filter(e => gymTypes.includes(e.type))
+    if (pool.length === 0) pool = ENEMIES
+    const base = pool[randInt(0, pool.length - 1)]
+    const lv = Math.min(5 + st.round * 3, 50)
+    const scale = (0.8 + st.round * 0.3) * st.gymData.trainerScale
+    let maxHP = Math.floor(80 * scale)
+
+    // Apply buff from event
+    if (st._nextEnemyBuff) {
+      maxHP = Math.floor(maxHP * st._nextEnemyBuff)
+    }
+
+    st.enemy = { ...base, lv, atkPow: Math.floor((base.atk + st.round * 2) * st.gymData.trainerScale) }
+    st.eHP = maxHP; st.eMaxHP = maxHP
+  } else {
+    const diff = DIFFICULTY[st.difficulty]
+    const base = ENEMIES[randInt(0, ENEMIES.length - 1)]
+    const lv = Math.min(5 + st.round * 3, 50)
+    const scale = (0.8 + st.round * 0.3) * diff.enemyScale
+    let maxHP = Math.floor(80 * scale)
+
+    if (st._nextEnemyBuff) {
+      maxHP = Math.floor(maxHP * st._nextEnemyBuff)
+    }
+
+    st.enemy = { ...base, lv, atkPow: Math.floor((base.atk + st.round * 2) * diff.enemyScale) }
+    st.eHP = maxHP; st.eMaxHP = maxHP
+  }
+
   st.statusEffects.enemy = []
+  st.isLeaderFight = false
 
   $('enemy-name').textContent = st.enemy.name
-  $('enemy-level').textContent = `Lv.${lv}`
+  $('enemy-level').textContent = `Lv.${st.enemy.lv}`
   const eSprite = $('enemy-sprite')
   eSprite.src = spr(st.enemy.id)
   imgFallback(eSprite, sprFallback(st.enemy.id))
   eSprite.className = 'enemy-pokemon enter-anim'
   setTimeout(() => eSprite.classList.remove('enter-anim'), 400)
-  $('level-indicator').textContent = `ROUND ${st.round}`
+  $('level-indicator').textContent = st.mode === 'gym' ? `训练师 ${st.gymStep + 1}/${st.gymData.trainers}` : `ROUND ${st.round}`
   $('player-level').textContent = `Lv.${5 + st.defeated * 3}`
-  $('difficulty-badge').textContent = diff.label
+}
+
+function spawnGymLeader() {
+  st.isLeaderFight = true
+  const leader = st.gymData.leader
+  const pk = leader.pokemon
+
+  st.enemy = {
+    name: pk.name, id: pk.id, type: pk.type, lv: pk.lv,
+    atkPow: pk.atkPow,
+    leaderName: leader.name,
+    leaderSkills: leader.skills,
+  }
+  st.eHP = pk.hp; st.eMaxHP = pk.hp
+  st.statusEffects.enemy = []
+
+  $('enemy-name').textContent = `${leader.name}的${pk.name}`
+  $('enemy-level').textContent = `Lv.${pk.lv}`
+  const eSprite = $('enemy-sprite')
+  eSprite.src = spr(pk.id)
+  imgFallback(eSprite, sprFallback(pk.id))
+  eSprite.className = 'enemy-pokemon enter-anim'
+  setTimeout(() => eSprite.classList.remove('enter-anim'), 400)
+  $('level-indicator').textContent = '馆主战！'
+  $('player-level').textContent = `Lv.${5 + st.defeated * 3}`
+
+  // Show leader pre-battle dialogue, then allow fighting
+  showDialogue(leader.name, leader.avatar, leader.preBattle, () => {
+    msg(`馆主${leader.name}发起了挑战！`)
+  })
 }
 
 // ===================================================================
@@ -286,10 +595,15 @@ function renderSkills() {
 // ===================================================================
 function getQuestion() {
   const diff = DIFFICULTY[st.difficulty]
+
   let maxDiff
-  if (st.round <= 2) maxDiff = Math.min(1, diff.maxDiffQ)
-  else if (st.round <= 3) maxDiff = Math.min(2, diff.maxDiffQ)
-  else maxDiff = diff.maxDiffQ
+  if (st.mode === 'gym') {
+    maxDiff = st.gymData.maxDiff
+  } else {
+    if (st.round <= 2) maxDiff = Math.min(1, diff.maxDiffQ)
+    else if (st.round <= 3) maxDiff = Math.min(2, diff.maxDiffQ)
+    else maxDiff = diff.maxDiffQ
+  }
 
   const eligible = []
   for (let i = 0; i < st.qBank.length; i++) {
@@ -306,7 +620,12 @@ function getQuestion() {
 
   if (eligible.length === 0) {
     usedQuestions.clear()
-    st.qBank = shuffle([...Q_BANK])
+    if (st.mode === 'gym') {
+      const gymQ = Q_BANK.filter(q => st.gymData.topics.includes(q.cat))
+      st.qBank = shuffle([...gymQ, ...gymQ])
+    } else {
+      st.qBank = shuffle([...Q_BANK])
+    }
     usedQuestions.add(0)
     return st.qBank[0]
   }
@@ -358,7 +677,8 @@ function showQuestion() {
 
 function startTimer() {
   const diff = DIFFICULTY[st.difficulty]
-  const baseDur = (st.curQ.diff === 3 ? 25 : st.curQ.diff === 2 ? 20 : 15) * diff.timerMult
+  const timerMult = st.mode === 'gym' ? 1.0 : diff.timerMult
+  const baseDur = (st.curQ.diff === 3 ? 25 : st.curQ.diff === 2 ? 20 : 15) * timerMult
   const bar = $('timer-bar')
   const con = $('timer-container')
   con.style.display = 'block'; bar.style.width = '100%'
@@ -549,7 +869,13 @@ async function onWrong(showExplain = false) {
     explainEl.style.display = 'none'
   }
 
-  msg(`答错了！${st.enemy.name}发动攻击！`)
+  // Leader uses named skill in attack message
+  if (st.isLeaderFight && st.enemy.leaderSkills) {
+    const sk = st.enemy.leaderSkills[randInt(0, st.enemy.leaderSkills.length - 1)]
+    msg(`${st.enemy.leaderName}的${st.enemy.name}使用${sk.name}！`)
+  } else {
+    msg(`答错了！${st.enemy.name}发动攻击！`)
+  }
 
   await sleep(400)
   await playAtk(false)
@@ -581,7 +907,7 @@ async function onWrong(showExplain = false) {
 }
 
 async function enemyDefeated() {
-  st.defeated++; st.round++
+  st.defeated++; st.round++; st.gymStep++
   SFX.play('defeat')
   const el = $('enemy-sprite')
   el.classList.add('faint-anim')
@@ -599,11 +925,35 @@ async function enemyDefeated() {
   if (settings.totalDefeated >= 10) tryAchievement('defeat_10')
   if (settings.totalDefeated >= 50) tryAchievement('defeat_50')
 
-  msg(`${st.enemy.name}被击败了！`)
-  await sleep(900)
+  // Check for buffed enemy reward
+  if (st._nextEnemyReward) {
+    const heal = Math.floor(st.pMaxHP * st._nextEnemyReward)
+    st.pHP = Math.min(st.pMaxHP, st.pHP + heal)
+    msg(`击败强敌！额外恢复${heal}HP！`)
+    st._nextEnemyBuff = null
+    st._nextEnemyReward = null
+    updateUI()
+    await sleep(800)
+  } else {
+    msg(`${st.enemy.name}被击败了！`)
+    await sleep(900)
+  }
 
+  // Gym leader defeated
+  if (st.isLeaderFight && st.mode === 'gym') {
+    await gymLeaderDefeated()
+    return
+  }
+
+  // Check win in quick mode or gym all enemies done
   if (st.defeated >= st.goalEnemies) { showResult(true); return }
 
+  // Random event between battles
+  el.classList.remove('faint-anim')
+  el.style.opacity = '1'; el.style.transform = ''
+  await handleRandomEvent()
+
+  // Heal between rounds
   const heal = Math.floor(st.pMaxHP * 0.2)
   st.pHP = Math.min(st.pMaxHP, st.pHP + heal)
 
@@ -611,13 +961,37 @@ async function enemyDefeated() {
     st.statusEffects.player.push({ type: 'def_up', icon: '🛡️', turns: 2 })
   }
 
-  el.classList.remove('faint-anim')
-  el.style.opacity = '1'; el.style.transform = ''
   spawnEnemy()
   updateUI()
-  msg(`野生的${st.enemy.name}出现了！(+${heal}HP)`)
+
+  if (st.isLeaderFight) {
+    // Leader dialogue already shown in spawnGymLeader
+  } else {
+    msg(`野生的${st.enemy.name}出现了！(+${heal}HP)`)
+  }
   await sleep(700)
   endTurn()
+}
+
+async function gymLeaderDefeated() {
+  const leader = st.gymData.leader
+
+  // Save badge
+  const gymProg = loadGymProgress()
+  if (!gymProg.badges.includes(st.gymData.id)) {
+    gymProg.badges.push(st.gymData.id)
+    saveGymProgress(gymProg)
+  }
+
+  // Check badge achievements
+  if (gymProg.badges.length >= 1) tryAchievement('first_badge')
+  if (gymProg.badges.length >= 4) tryAchievement('four_badges')
+  if (gymProg.badges.length >= 8) tryAchievement('all_badges')
+
+  // Show post-defeat dialogue
+  showDialogue(leader.name, leader.avatar, leader.postDefeat, () => {
+    showResult(true)
+  })
 }
 
 function endTurn() {
@@ -682,7 +1056,18 @@ function showResult(win) {
   const s = $('result-screen')
   s.style.display = 'flex'; s.className = win ? 'victory' : 'defeat'
   $('result-emoji').textContent = win ? '🏆' : '💀'
-  $('result-title').textContent = win ? '胜利！' : '战斗结束...'
+
+  // Badge earned display for gym mode
+  const badgeEl = $('badge-earned')
+  if (st.mode === 'gym' && win && st.gymData) {
+    badgeEl.style.display = 'block'
+    badgeEl.innerHTML = `<span class="badge-icon">${st.gymData.leader.badge}</span>获得${st.gymData.leader.badgeName}！`
+    $('result-title').textContent = `${st.gymData.name}通关！`
+  } else {
+    badgeEl.style.display = 'none'
+    $('result-title').textContent = win ? '胜利！' : '战斗结束...'
+  }
+
   const tot = st.correct + st.wrong
   const accuracy = tot > 0 ? Math.round(st.correct / tot * 100) : 0
 
@@ -721,23 +1106,27 @@ function showResult(win) {
     })
   }
 
-  // Check & save best
-  const best = loadBest()
-  let isNewRecord = false
-  if (st.defeated > best.defeated || (st.defeated === best.defeated && accuracy > best.accuracy)) {
-    isNewRecord = true
-    saveBest({ defeated: st.defeated, streak: st.maxStreak, accuracy })
-  } else if (st.maxStreak > best.streak) {
-    best.streak = st.maxStreak
-    saveBest(best)
-  }
+  // Check & save best (only for quick mode)
+  if (st.mode === 'quick') {
+    const best = loadBest()
+    let isNewRecord = false
+    if (st.defeated > best.defeated || (st.defeated === best.defeated && accuracy > best.accuracy)) {
+      isNewRecord = true
+      saveBest({ defeated: st.defeated, streak: st.maxStreak, accuracy })
+    } else if (st.maxStreak > best.streak) {
+      best.streak = st.maxStreak
+      saveBest(best)
+    }
 
-  const nrEl = $('new-record')
-  if (isNewRecord) {
-    nrEl.style.display = 'block'
-    nrEl.textContent = '🎉 新纪录！'
+    const nrEl = $('new-record')
+    if (isNewRecord) {
+      nrEl.style.display = 'block'
+      nrEl.textContent = '🎉 新纪录！'
+    } else {
+      nrEl.style.display = 'none'
+    }
   } else {
-    nrEl.style.display = 'none'
+    $('new-record').style.display = 'none'
   }
 }
 
@@ -761,8 +1150,12 @@ export function restartGame() {
   $('result-screen').style.display = 'none'
   $('battle-scene').style.display = 'none'
   $('select-screen').style.display = 'none'
+  $('gym-map-screen').style.display = 'none'
   $('title-screen').style.display = 'flex'
   st.selectedIdx = -1
+  st.mode = 'quick'
+  st.gymData = null
+  st.isLeaderFight = false
   if (fx) fx.clear()
   showBestScore()
 }
