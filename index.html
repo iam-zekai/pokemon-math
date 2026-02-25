@@ -202,12 +202,20 @@ body {
 .skill-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .skill-btn {
   font-family: 'Press Start 2P', monospace; font-size: 7px; color: #fff;
-  border: none; padding: 12px 6px; cursor: pointer; border-radius: 8px;
+  border: none; padding: 10px 6px; cursor: pointer; border-radius: 8px;
   transition: all 0.1s; line-height: 1.4; text-align: center;
+  background: linear-gradient(135deg, #4b5563, #374151);
+  box-shadow: 0 3px 0 #1f2937;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
 }
 .skill-btn:active { transform: translateY(3px); box-shadow: none !important; }
 .skill-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.skill-btn .skill-dmg { display: block; font-size: 6px; opacity: 0.7; margin-top: 3px; }
+.skill-btn .skill-icon { font-size: 16px; font-family: sans-serif; line-height: 1; }
+.skill-btn .skill-name { font-size: 8px; }
+.skill-btn .skill-dmg { font-size: 6px; opacity: 0.7; }
+.skill-btn .skill-type-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 3px; vertical-align: middle;
+}
 
 .question-panel { display: none; flex-direction: column; gap: 8px; }
 .question-text {
@@ -270,10 +278,10 @@ body {
 
 <div id="game">
   <div id="title-screen">
-    <div class="title-sprites">
-      <img src="https://cdn.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon/25.png" alt="">
-      <img src="https://cdn.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon/6.png" alt="">
-      <img src="https://cdn.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon/150.png" alt="">
+    <div class="title-sprites" id="title-sprites">
+      <img src="" alt="" data-id="25">
+      <img src="" alt="" data-id="6">
+      <img src="" alt="" data-id="150">
     </div>
     <h1>POKEMON<br>MATH BATTLE</h1>
     <p class="subtitle">高中数学对战！</p>
@@ -346,9 +354,38 @@ body {
 // ===================================================================
 // SPRITE CDN
 // ===================================================================
-const S = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon';
-const spr = id => `${S}/${id}.png`;
-const sprBack = id => `${S}/back/${id}.png`;
+const CDN1 = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon';
+const CDN2 = 'https://fastly.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon';
+const spr = id => `${CDN1}/${id}.png`;
+const sprBack = id => `${CDN1}/back/${id}.png`;
+const sprFallback = id => `${CDN2}/${id}.png`;
+const sprBackFallback = id => `${CDN2}/back/${id}.png`;
+
+// Preload images with fallback
+function loadImg(src, fallback) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => res(src);
+    img.onerror = () => {
+      if (fallback) {
+        const img2 = new Image();
+        img2.onload = () => res(fallback);
+        img2.onerror = () => res(src); // still use original
+        img2.src = fallback;
+      } else res(src);
+    };
+    img.src = src;
+  });
+}
+
+// Apply fallback to all <img> tags
+function imgFallback(el, fallbackSrc) {
+  el.onerror = function() {
+    if (this.dataset.tried) return;
+    this.dataset.tried = '1';
+    this.src = fallbackSrc;
+  };
+}
 
 // ===================================================================
 // TYPE SYSTEM
@@ -358,6 +395,12 @@ const TC = {
   normal:'#9ca3af', ghost:'#8b5cf6', flying:'#93c5fd', bug:'#84cc16',
   psychic:'#ec4899', poison:'#a855f7', rock:'#78716c', fighting:'#b45309',
   ice:'#67e8f9', dragon:'#7c3aed', dark:'#44403c', fairy:'#f9a8d4',
+};
+const TI = {
+  electric:'⚡', fire:'🔥', water:'💧', grass:'🍃',
+  normal:'💥', ghost:'👻', flying:'🌪️', bug:'🐛',
+  psychic:'🔮', poison:'☠️', rock:'🪨', fighting:'👊',
+  ice:'❄️', dragon:'🐲', dark:'🌑', fairy:'✨',
 };
 
 // ===================================================================
@@ -730,9 +773,13 @@ function showSelectScreen(){
   const g=document.getElementById('pokemon-grid'); g.innerHTML='';
   POKEMON.forEach((p,i)=>{
     const d=document.createElement('div'); d.className='pokemon-card';
-    d.innerHTML=`<img src="${spr(p.id)}"><span class="name">${p.name}</span>
+    const cardImg = document.createElement('img');
+    cardImg.src = spr(p.id);
+    imgFallback(cardImg, sprFallback(p.id));
+    d.appendChild(cardImg);
+    d.insertAdjacentHTML('beforeend', `<span class="name">${p.name}</span>
       <span class="type-badge" style="background:${TC[p.type]}">${p.type}</span>
-      <span class="stats-preview">HP:${p.hp}</span>`;
+      <span class="stats-preview">HP:${p.hp}</span>`);
     d.onclick=()=>selPoke(i); g.appendChild(d);
   });
 }
@@ -760,7 +807,9 @@ function startBattle(){
   window.onresize=()=>fx&&fx.resize();
 
   document.getElementById('player-name').textContent=st.player.name;
-  document.getElementById('player-sprite').src=sprBack(st.player.id);
+  const playerSpr = document.getElementById('player-sprite');
+  playerSpr.src=sprBack(st.player.id);
+  imgFallback(playerSpr, sprBackFallback(st.player.id));
 
   spawnEnemy();
   renderSkills();
@@ -780,6 +829,7 @@ function spawnEnemy(){
   document.getElementById('enemy-level').textContent=`Lv.${lv}`;
   const eSprite=document.getElementById('enemy-sprite');
   eSprite.src=spr(st.enemy.id);
+  imgFallback(eSprite, sprFallback(st.enemy.id));
   eSprite.className='enemy-pokemon enter-anim';
   setTimeout(()=>eSprite.classList.remove('enter-anim'),400);
   document.getElementById('level-indicator').textContent=`ROUND ${st.round}`;
@@ -814,14 +864,11 @@ function msg(t){ document.getElementById('message-box').textContent=t; }
 function renderSkills(){
   const panel=document.getElementById('skill-panel');
   panel.innerHTML='';
-  const colors=['#ef4444','#6366f1','#22c55e','#f59e0b'];
-  const shadows=['#b91c1c','#4338ca','#15803d','#b45309'];
   st.player.skills.forEach((sk,i)=>{
     const btn=document.createElement('button');
     btn.className='skill-btn';
-    btn.style.background=`linear-gradient(135deg, ${TC[sk.type]}, ${colors[i]})`;
-    btn.style.boxShadow=`0 3px 0 ${shadows[i]}`;
-    btn.innerHTML=`${sk.name}<span class="skill-dmg">威力:${sk.power} 命中:${sk.acc}</span>`;
+    const icon = TI[sk.type] || '💥';
+    btn.innerHTML=`<span class="skill-icon">${icon}</span><span class="skill-name"><span class="skill-type-dot" style="background:${TC[sk.type]}"></span>${sk.name}</span><span class="skill-dmg">威力${sk.power} 命中${sk.acc}</span>`;
     btn.onclick=()=>useSkill(i);
     panel.appendChild(btn);
   });
@@ -1116,6 +1163,17 @@ function restartGame(){
   st.selectedIdx=-1;
   if(fx)fx.clear();
 }
+
+// ===================================================================
+// PRELOAD TITLE SPRITES WITH FALLBACK
+// ===================================================================
+(function initSprites(){
+  document.querySelectorAll('#title-sprites img').forEach(img => {
+    const id = img.dataset.id;
+    img.src = spr(id);
+    imgFallback(img, sprFallback(id));
+  });
+})();
 </script>
 </body>
 </html>
