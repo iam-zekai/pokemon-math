@@ -114,11 +114,11 @@ body {
   background: linear-gradient(180deg, #7dd3fc 0%, #bae6fd 35%, #86efac 50%, #4ade80 60%, #22c55e 100%);
 }
 .ground-enemy {
-  position: absolute; top: 48%; right: 4%; width: 200px; height: 24px;
+  position: absolute; top: 52%; right: 5%; width: 44%; height: 5%;
   background: radial-gradient(ellipse, rgba(0,0,0,0.18) 0%, transparent 70%);
 }
 .ground-player {
-  position: absolute; bottom: 2%; left: 2%; width: 220px; height: 28px;
+  position: absolute; bottom: 1%; left: 3%; width: 48%; height: 5%;
   background: radial-gradient(ellipse, rgba(0,0,0,0.22) 0%, transparent 70%);
 }
 .info-box {
@@ -143,14 +143,14 @@ body {
 @keyframes status-pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
 
 .enemy-pokemon {
-  position: absolute; top: 8%; right: 6%;
-  width: 160px; height: 160px; image-rendering: pixelated;
-  filter: drop-shadow(3px 8px 10px rgba(0,0,0,0.3)); transition: all 0.3s; z-index: 5;
+  position: absolute; top: 4%; right: 3%;
+  width: 42%; aspect-ratio: 1; image-rendering: pixelated;
+  filter: drop-shadow(3px 8px 12px rgba(0,0,0,0.35)); transition: all 0.3s; z-index: 5;
 }
 .player-pokemon {
-  position: absolute; bottom: 4%; left: 2%;
-  width: 192px; height: 192px; image-rendering: pixelated;
-  filter: drop-shadow(3px 8px 10px rgba(0,0,0,0.3)); transition: all 0.3s; z-index: 5;
+  position: absolute; bottom: 0%; left: 0%;
+  width: 50%; aspect-ratio: 1; image-rendering: pixelated;
+  filter: drop-shadow(3px 8px 12px rgba(0,0,0,0.35)); transition: all 0.3s; z-index: 5;
 }
 
 #fx-canvas { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
@@ -361,27 +361,17 @@ body {
 .ach-name { font-family: var(--font-math); font-size: 13px; font-weight: 700; }
 
 /* ===== Responsive ===== */
-@media(max-height:750px){
-  .battle-bg{min-height:240px}
-  .enemy-pokemon{width:136px;height:136px;top:8%}
-  .player-pokemon{width:160px;height:160px}
-  .info-box{padding:6px 10px;min-width:160px}
+@media(max-height:700px){
+  .battle-bg{min-height:220px}
+  .info-box{padding:6px 10px;min-width:155px}
+  .info-box .poke-name{font-size:11px}
 }
 
-@media(max-height:650px){
-  .battle-bg{min-height:200px}
-  .enemy-pokemon{width:112px;height:112px;top:6%}
-  .player-pokemon{width:136px;height:136px}
-  .info-box{padding:5px 8px;min-width:148px}
-  .message-box{min-height:38px;padding:8px;font-size:11px}
+@media(max-height:600px){
+  .battle-bg{min-height:180px}
+  .info-box{padding:5px 8px;min-width:140px}
+  .info-box .poke-name{font-size:10px}
+  .message-box{min-height:36px;padding:7px;font-size:11px}
   .skill-btn{padding:8px 4px}
-  .answer-btn{padding:11px 4px;font-size:13px}
-}
-
-@media(max-height:550px){
-  .battle-bg{min-height:170px}
-  .enemy-pokemon{width:88px;height:88px;top:5%}
-  .player-pokemon{width:104px;height:104px}
-  .message-box{min-height:32px;padding:6px;font-size:10px}
-  .answer-btn{padding:9px 4px;font-size:12px}
+  .answer-btn{padding:10px 4px;font-size:13px}
 }
