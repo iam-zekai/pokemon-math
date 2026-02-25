@@ -1,7 +1,11 @@
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/press-start-2p/400.css');
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-:root { --hp-green: #22c55e; --hp-yellow: #eab308; --hp-red: #ef4444; }
+:root {
+  --hp-green: #22c55e; --hp-yellow: #eab308; --hp-red: #ef4444;
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-math: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+}
 
 body {
   font-family: 'Press Start 2P', monospace;
@@ -40,11 +44,11 @@ body {
   text-shadow: 0 0 10px #f59e0b, 0 0 30px #f59e0b, 2px 2px 0 #92400e;
   text-align: center; line-height: 2; margin-bottom: 8px;
 }
-#title-screen .subtitle { font-size: 9px; color: #a5b4fc; margin-bottom: 12px; letter-spacing: 1px; }
-.best-score { font-size: 7px; color: #94a3b8; margin-bottom: 8px; }
-.best-score span { color: #fbbf24; }
-.achievement-summary { font-size: 7px; color: #94a3b8; margin-bottom: 24px; }
-.achievement-summary span { color: #fbbf24; }
+#title-screen .subtitle { font-family: var(--font-math); font-weight: 700; font-size: 14px; color: #a5b4fc; margin-bottom: 12px; letter-spacing: 2px; }
+.best-score { font-family: var(--font-math); font-size: 11px; color: #94a3b8; margin-bottom: 8px; }
+.best-score span { color: #fbbf24; font-weight: 700; }
+.achievement-summary { font-family: var(--font-math); font-size: 11px; color: #94a3b8; margin-bottom: 24px; }
+.achievement-summary span { color: #fbbf24; font-weight: 700; }
 .start-btn {
   font-family: 'Press Start 2P', monospace; font-size: 13px; color: #fff;
   background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none;
@@ -65,14 +69,14 @@ body {
   background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
   z-index: 90; padding: 16px; overflow-y: auto;
 }
-#select-screen h2 { font-size: 12px; color: #fbbf24; margin: 12px 0 8px; }
+#select-screen h2 { font-family: var(--font-math); font-weight: 700; font-size: 16px; color: #fbbf24; margin: 12px 0 8px; }
 
 /* Difficulty selector */
 .difficulty-selector { display: flex; gap: 6px; margin-bottom: 14px; }
 .diff-btn {
-  font-family: 'Press Start 2P', monospace; font-size: 7px; color: #94a3b8;
+  font-family: var(--font-math); font-weight: 700; font-size: 12px; color: #94a3b8;
   background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.12);
-  padding: 6px 12px; cursor: pointer; border-radius: 8px; transition: all 0.2s;
+  padding: 8px 16px; cursor: pointer; border-radius: 8px; transition: all 0.2s;
 }
 .diff-btn:hover { border-color: rgba(255,255,255,0.3); }
 .diff-btn.active {
@@ -91,7 +95,7 @@ body {
   width: 64px; height: 64px; image-rendering: pixelated;
   background: rgba(255,255,255,0.03); border-radius: 8px;
 }
-.pokemon-card .name { font-size: 7px; color: #e2e8f0; display: block; margin: 2px 0; }
+.pokemon-card .name { font-family: var(--font-math); font-weight: 700; font-size: 12px; color: #e2e8f0; display: block; margin: 4px 0 2px; }
 .pokemon-card .type-badge { font-size: 6px; color: #fff; padding: 2px 5px; border-radius: 4px; }
 .pokemon-card .stats-preview { font-size: 5px; color: #94a3b8; margin-top: 3px; display: block; line-height: 1.5; }
 .confirm-btn {
@@ -124,7 +128,7 @@ body {
 }
 .enemy-info { top: 10px; left: 8px; }
 .player-info { bottom: 10px; right: 8px; }
-.info-box .poke-name { font-size: 9px; color: #1f2937; }
+.info-box .poke-name { font-family: var(--font-math); font-weight: 700; font-size: 13px; color: #1f2937; }
 .info-box .poke-level { font-size: 7px; color: #6b7280; float: right; margin-top: 2px; }
 .hp-bar-container { display: flex; align-items: center; gap: 5px; margin-top: 5px; }
 .hp-label { font-size: 7px; color: #ea580c; font-weight: bold; }
@@ -210,7 +214,8 @@ body {
   padding: 4px 12px; border-radius: 10px; z-index: 11;
 }
 .difficulty-badge {
-  position: absolute; top: 6px; left: 6px; font-size: 6px; color: #fff;
+  font-family: var(--font-math); font-weight: 700;
+  position: absolute; top: 6px; left: 6px; font-size: 10px; color: #fff;
   background: rgba(99,102,241,0.7); padding: 3px 8px; border-radius: 8px; z-index: 11;
 }
 .streak-indicator {
@@ -232,8 +237,9 @@ body {
   border-top: 3px solid #374151; padding: 10px; display: flex; flex-direction: column; gap: 8px;
 }
 .message-box {
+  font-family: var(--font-math); font-weight: 500;
   background: #fff; border: 2px solid #374151; border-radius: 8px;
-  padding: 10px; font-size: 9px; color: #1f2937; line-height: 1.6;
+  padding: 10px; font-size: 13px; color: #1f2937; line-height: 1.6;
   min-height: 44px; display: flex; align-items: center;
 }
 
@@ -249,8 +255,8 @@ body {
 .skill-btn:active { transform: translateY(3px); box-shadow: none !important; }
 .skill-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .skill-btn .skill-icon { font-size: 16px; font-family: sans-serif; line-height: 1; }
-.skill-btn .skill-name { font-size: 8px; }
-.skill-btn .skill-dmg { font-size: 6px; opacity: 0.7; }
+.skill-btn .skill-name { font-family: var(--font-math); font-weight: 700; font-size: 11px; }
+.skill-btn .skill-dmg { font-family: var(--font-math); font-size: 9px; opacity: 0.7; }
 .skill-btn .skill-type-dot {
   display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 3px; vertical-align: middle;
 }
@@ -258,18 +264,20 @@ body {
 .question-panel { display: none; flex-direction: column; gap: 8px; }
 .question-header { display: flex; justify-content: space-between; align-items: center; }
 .question-category {
-  font-size: 6px; color: #fff; padding: 2px 6px; border-radius: 4px;
+  font-family: var(--font-math); font-weight: 700;
+  font-size: 11px; color: #fff; padding: 3px 8px; border-radius: 4px;
   background: #6366f1;
 }
-.question-diff { font-size: 6px; color: #94a3b8; }
+.question-diff { font-family: var(--font-pixel); font-size: 8px; color: #94a3b8; }
 .question-text {
-  font-size: 13px; color: #1f2937; text-align: center; padding: 10px 8px;
-  background: #fff; border: 2px solid #374151; border-radius: 8px; line-height: 1.6;
+  font-family: var(--font-math); font-weight: 700;
+  font-size: 17px; color: #1f2937; text-align: center; padding: 12px 10px;
+  background: #fff; border: 2px solid #374151; border-radius: 8px; line-height: 1.7;
 }
 .answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .answer-btn {
-  font-family: 'Press Start 2P', monospace; font-size: 11px; color: #fff;
-  border: none; padding: 13px 6px; cursor: pointer; border-radius: 8px; transition: all 0.1s;
+  font-family: var(--font-math); font-weight: 700; font-size: 15px; color: #fff;
+  border: none; padding: 14px 6px; cursor: pointer; border-radius: 8px; transition: all 0.1s;
 }
 .answer-btn:nth-child(1){background:#6366f1;box-shadow:0 3px 0 #4338ca}
 .answer-btn:nth-child(2){background:#ef4444;box-shadow:0 3px 0 #b91c1c}
@@ -282,8 +290,9 @@ body {
 @keyframes btn-no { 0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)} }
 
 .explain-box {
+  font-family: var(--font-math); font-weight: 500;
   background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;
-  padding: 8px 10px; font-size: 8px; color: #92400e; line-height: 1.6;
+  padding: 8px 10px; font-size: 12px; color: #92400e; line-height: 1.6;
   display: none;
 }
 
@@ -312,10 +321,10 @@ body {
   border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; width: 100%; max-width: 320px;
 }
 .stats-box h3 { font-size: 8px; color: #fbbf24; margin-bottom: 8px; }
-.stat-row { display: flex; justify-content: space-between; font-size: 8px; color: #d1d5db; padding: 4px 0; }
+.stat-row { font-family: var(--font-math); display: flex; justify-content: space-between; font-size: 12px; color: #d1d5db; padding: 4px 0; }
 .stat-row+.stat-row { border-top: 1px solid rgba(255,255,255,0.08); }
 .stat-val { color: #fbbf24; }
-.topic-row { display: flex; justify-content: space-between; font-size: 6px; color: #94a3b8; padding: 3px 0; }
+.topic-row { font-family: var(--font-math); display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; padding: 3px 0; }
 .topic-bar { flex:1; margin: 0 6px; height: 4px; background: #374151; border-radius: 2px; overflow: hidden; align-self: center; }
 .topic-bar-fill { height: 100%; border-radius: 2px; background: #22c55e; }
 .new-record { font-size: 8px; color: #fbbf24; text-align: center; margin: 6px 0; animation: pulse-btn 1s infinite; }
@@ -348,8 +357,8 @@ body {
 }
 .achievement-notif.show { top: 16px; }
 .ach-icon { font-size: 24px; }
-.ach-title { font-size: 6px; color: #92400e; }
-.ach-name { font-size: 8px; font-weight: bold; }
+.ach-title { font-family: var(--font-math); font-size: 10px; color: #92400e; }
+.ach-name { font-family: var(--font-math); font-size: 13px; font-weight: 700; }
 
 /* ===== Responsive ===== */
 @media(max-height:700px){
