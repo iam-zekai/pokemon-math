@@ -8,376 +8,290 @@
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/press-start-2p/400.css');
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --hp-green: #22c55e;
-  --hp-yellow: #eab308;
-  --hp-red: #ef4444;
-}
+:root { --hp-green: #22c55e; --hp-yellow: #eab308; --hp-red: #ef4444; }
 
 body {
   font-family: 'Press Start 2P', monospace;
   background: #1a1a2e;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100dvh;
-  overflow: hidden;
+  display: flex; justify-content: center; align-items: center;
+  min-height: 100dvh; overflow: hidden;
 }
 
 #game {
-  width: 100%;
-  max-width: 480px;
-  height: 100dvh;
-  max-height: 860px;
-  display: flex;
-  flex-direction: column;
-  background: #e8e8e8;
-  position: relative;
-  overflow: hidden;
+  width: 100%; max-width: 480px; height: 100dvh; max-height: 860px;
+  display: flex; flex-direction: column; background: #e8e8e8;
+  position: relative; overflow: hidden;
 }
 
-/* ===== Title Screen ===== */
+/* ===== Title ===== */
 #title-screen {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: linear-gradient(180deg, #1e3a5f 0%, #0f1b2d 100%);
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
   z-index: 100;
 }
-#title-screen h1 {
-  font-size: 18px; color: #fbbf24;
-  text-shadow: 2px 2px #b45309, 0 0 20px rgba(251,191,36,0.5);
-  text-align: center; line-height: 1.8; margin-bottom: 10px;
-}
-#title-screen .subtitle { font-size: 10px; color: #93c5fd; margin-bottom: 40px; }
-
-.title-sprites {
-  display: flex; gap: 8px; margin-bottom: 24px;
-}
+.title-sprites { display: flex; gap: 8px; margin-bottom: 24px; }
 .title-sprites img {
   width: 64px; height: 64px; image-rendering: pixelated;
-  animation: pokeball-bounce 1.5s ease-in-out infinite;
+  animation: float 2s ease-in-out infinite;
 }
-.title-sprites img:nth-child(2) { animation-delay: 0.3s; }
-.title-sprites img:nth-child(3) { animation-delay: 0.6s; }
-
-@keyframes pokeball-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
+.title-sprites img:nth-child(2) { animation-delay: 0.4s; }
+.title-sprites img:nth-child(3) { animation-delay: 0.8s; }
+@keyframes float {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(2deg); }
 }
-
+#title-screen h1 {
+  font-size: 16px; color: #fbbf24;
+  text-shadow: 0 0 10px #f59e0b, 0 0 30px #f59e0b, 2px 2px 0 #92400e;
+  text-align: center; line-height: 2; margin-bottom: 8px;
+}
+#title-screen .subtitle { font-size: 9px; color: #a5b4fc; margin-bottom: 36px; letter-spacing: 1px; }
 .start-btn {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 14px; color: #fff; background: #3b82f6;
-  border: none; padding: 16px 40px; cursor: pointer;
-  border-radius: 8px; box-shadow: 0 4px 0 #1d4ed8;
-  animation: blink 1.2s step-end infinite;
+  font-family: 'Press Start 2P', monospace; font-size: 13px; color: #fff;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none;
+  padding: 16px 44px; cursor: pointer; border-radius: 12px;
+  box-shadow: 0 4px 0 #4338ca, 0 6px 20px rgba(99,102,241,0.4);
+  animation: pulse-btn 2s ease-in-out infinite;
 }
-.start-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #1d4ed8; }
+.start-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #4338ca; }
+@keyframes pulse-btn {
+  0%,100% { box-shadow: 0 4px 0 #4338ca, 0 6px 20px rgba(99,102,241,0.4); }
+  50% { box-shadow: 0 4px 0 #4338ca, 0 6px 30px rgba(99,102,241,0.7); }
+}
 
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-/* ===== Select Screen ===== */
+/* ===== Select ===== */
 #select-screen {
-  position: absolute; inset: 0; display: none;
-  flex-direction: column; align-items: center;
-  background: linear-gradient(180deg, #1e3a5f 0%, #0f1b2d 100%);
-  z-index: 90; padding: 20px; overflow-y: auto;
+  position: absolute; inset: 0; display: none; flex-direction: column; align-items: center;
+  background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
+  z-index: 90; padding: 16px; overflow-y: auto;
 }
-#select-screen h2 { font-size: 13px; color: #fbbf24; margin: 16px 0 20px; text-align: center; }
-
-.pokemon-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 12px; width: 100%; max-width: 360px;
-}
+#select-screen h2 { font-size: 12px; color: #fbbf24; margin: 12px 0 16px; }
+.pokemon-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; width: 100%; max-width: 360px; }
 .pokemon-card {
-  background: rgba(255,255,255,0.08); border: 3px solid rgba(255,255,255,0.15);
-  border-radius: 12px; padding: 10px 6px; text-align: center; cursor: pointer;
-  transition: all 0.2s;
+  background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.12);
+  border-radius: 12px; padding: 8px 4px; text-align: center; cursor: pointer; transition: all 0.2s;
 }
-.pokemon-card:hover, .pokemon-card.selected {
-  border-color: #fbbf24; background: rgba(251,191,36,0.15); transform: scale(1.05);
+.pokemon-card:hover,.pokemon-card.selected {
+  border-color: #fbbf24; background: rgba(251,191,36,0.12); transform: scale(1.05);
 }
-.pokemon-card img { width: 72px; height: 72px; image-rendering: pixelated; }
-.pokemon-card .name { font-size: 7px; color: #fff; display: block; margin: 4px 0; }
-.pokemon-card .type-badge {
-  font-size: 7px; color: #fff; padding: 2px 6px; border-radius: 4px; display: inline-block;
-}
-.pokemon-card .stats-preview {
-  font-size: 6px; color: #aaa; margin-top: 4px; display: block; line-height: 1.6;
-}
-
+.pokemon-card img { width: 64px; height: 64px; image-rendering: pixelated; }
+.pokemon-card .name { font-size: 7px; color: #e2e8f0; display: block; margin: 2px 0; }
+.pokemon-card .type-badge { font-size: 6px; color: #fff; padding: 2px 5px; border-radius: 4px; }
+.pokemon-card .stats-preview { font-size: 5px; color: #94a3b8; margin-top: 3px; display: block; line-height: 1.5; }
 .confirm-btn {
-  font-family: 'Press Start 2P', monospace; font-size: 12px; color: #fff;
-  background: #22c55e; border: none; padding: 14px 36px; cursor: pointer;
-  border-radius: 8px; box-shadow: 0 4px 0 #15803d; margin-top: 20px; display: none;
+  font-family: 'Press Start 2P', monospace; font-size: 11px; color: #fff;
+  background: linear-gradient(135deg, #22c55e, #16a34a); border: none;
+  padding: 14px 32px; cursor: pointer; border-radius: 10px;
+  box-shadow: 0 4px 0 #15803d; margin-top: 16px; display: none;
 }
-.confirm-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #15803d; }
+.confirm-btn:active { transform: translateY(4px); box-shadow: none; }
 
-/* ===== Battle Scene ===== */
+/* ===== Battle ===== */
 #battle-scene { flex: 1; display: none; flex-direction: column; position: relative; }
-
 .battle-bg {
-  flex: 1; position: relative; min-height: 280px; overflow: hidden;
-  background: linear-gradient(180deg, #87ceeb 0%, #b4d7e8 40%, #90be6d 50%, #6a9f4d 100%);
+  flex: 1; position: relative; min-height: 270px; overflow: hidden;
+  background: linear-gradient(180deg, #7dd3fc 0%, #bae6fd 35%, #86efac 50%, #4ade80 60%, #22c55e 100%);
 }
-
-/* Ground platforms */
 .ground-enemy {
-  position: absolute; top: 42%; right: 10%; width: 140px; height: 24px;
-  background: radial-gradient(ellipse, #6a9f4d 0%, transparent 70%);
+  position: absolute; top: 43%; right: 8%; width: 150px; height: 20px;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.15) 0%, transparent 70%);
 }
 .ground-player {
-  position: absolute; bottom: 8%; left: 5%; width: 180px; height: 30px;
-  background: radial-gradient(ellipse, #5a8f3d 0%, transparent 70%);
+  position: absolute; bottom: 6%; left: 4%; width: 170px; height: 24px;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.2) 0%, transparent 70%);
 }
-
 .info-box {
-  position: absolute; background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(240,240,240,0.95));
-  border: 3px solid #333; border-radius: 10px; padding: 10px 14px; min-width: 175px;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.15);
+  position: absolute; background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(245,245,245,0.96));
+  border: 3px solid #374151; border-radius: 10px; padding: 8px 12px; min-width: 170px;
+  box-shadow: 2px 3px 10px rgba(0,0,0,0.15);
 }
-.enemy-info { top: 12px; left: 10px; }
-.player-info { bottom: 12px; right: 10px; }
-
-.info-box .poke-name { font-size: 10px; color: #333; }
-.info-box .poke-level { font-size: 8px; color: #666; float: right; margin-top: 2px; }
-
-.hp-bar-container { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
-.hp-label { font-size: 8px; color: #f97316; font-weight: bold; }
-.hp-bar-bg { flex: 1; height: 8px; background: #333; border-radius: 4px; overflow: hidden; }
-.hp-bar-fill {
-  height: 100%; background: var(--hp-green); border-radius: 4px;
-  transition: width 0.6s ease, background-color 0.3s;
-}
-.hp-text { font-size: 7px; color: #555; text-align: right; margin-top: 3px; }
-
-.exp-bar-container { margin-top: 3px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; }
+.enemy-info { top: 10px; left: 8px; }
+.player-info { bottom: 10px; right: 8px; }
+.info-box .poke-name { font-size: 9px; color: #1f2937; }
+.info-box .poke-level { font-size: 7px; color: #6b7280; float: right; margin-top: 2px; }
+.hp-bar-container { display: flex; align-items: center; gap: 5px; margin-top: 5px; }
+.hp-label { font-size: 7px; color: #ea580c; font-weight: bold; }
+.hp-bar-bg { flex: 1; height: 7px; background: #374151; border-radius: 4px; overflow: hidden; }
+.hp-bar-fill { height: 100%; background: var(--hp-green); border-radius: 4px; transition: width 0.5s ease, background-color 0.3s; }
+.hp-text { font-size: 6px; color: #6b7280; text-align: right; margin-top: 2px; }
+.exp-bar-container { margin-top: 2px; height: 3px; background: #374151; border-radius: 2px; overflow: hidden; }
 .exp-bar-fill { height: 100%; background: #60a5fa; border-radius: 2px; transition: width 0.5s; width: 0%; }
 
-/* Pokemon sprites */
 .enemy-pokemon {
-  position: absolute; top: 16%; right: 14%;
-  width: 120px; height: 120px;
-  image-rendering: pixelated;
-  filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.3));
-  transition: all 0.3s; z-index: 5;
+  position: absolute; top: 14%; right: 12%;
+  width: 120px; height: 120px; image-rendering: pixelated;
+  filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.25)); transition: all 0.3s; z-index: 5;
 }
 .player-pokemon {
-  position: absolute; bottom: 12%; left: 8%;
-  width: 140px; height: 140px;
-  image-rendering: pixelated;
-  filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.3));
-  transition: all 0.3s; z-index: 5;
+  position: absolute; bottom: 10%; left: 6%;
+  width: 140px; height: 140px; image-rendering: pixelated;
+  filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.25)); transition: all 0.3s; z-index: 5;
 }
 
-/* FX Canvas */
-#fx-canvas {
-  position: absolute; inset: 0; z-index: 10; pointer-events: none;
-}
+#fx-canvas { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
 
 /* Animations */
-@keyframes attack-right {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(60px) scale(1.1); }
-  50% { transform: translateX(0) scale(1); }
-}
-@keyframes attack-left {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-60px) scale(1.1); }
-  50% { transform: translateX(0) scale(1); }
-}
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-10px); }
-  40% { transform: translateX(10px); }
-  60% { transform: translateX(-8px); }
-  80% { transform: translateX(8px); }
-}
+@keyframes atk-right { 0%{transform:translateX(0)}25%{transform:translateX(50px) scale(1.08)}50%{transform:translateX(0)} }
+@keyframes atk-left { 0%{transform:translateX(0)}25%{transform:translateX(-50px) scale(1.08)}50%{transform:translateX(0)} }
+@keyframes shake { 0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)} }
 @keyframes flash-hit {
-  0%, 100% { opacity: 1; filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.3)); }
-  20% { opacity: 0.3; filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.3)) brightness(3); }
-  40% { opacity: 1; }
-  60% { opacity: 0.3; filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.3)) brightness(3); }
-  80% { opacity: 1; }
+  0%,100%{opacity:1;filter:drop-shadow(2px 6px 8px rgba(0,0,0,0.25))}
+  20%,60%{opacity:0.2;filter:brightness(3) drop-shadow(2px 6px 8px rgba(0,0,0,0.25))}
+  40%,80%{opacity:1}
 }
-@keyframes special-charge {
-  0% { filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.3)); }
-  50% { filter: drop-shadow(0 0 20px #fbbf24) drop-shadow(0 0 40px #f97316) brightness(1.3); }
-  100% { filter: drop-shadow(2px 6px 8px rgba(0,0,0,0.3)); }
+@keyframes charge-glow {
+  0%{filter:drop-shadow(2px 6px 8px rgba(0,0,0,0.25))}
+  50%{filter:drop-shadow(0 0 20px #fbbf24) drop-shadow(0 0 40px #f97316) brightness(1.2)}
+  100%{filter:drop-shadow(2px 6px 8px rgba(0,0,0,0.25))}
 }
-@keyframes enemy-faint {
-  0% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(40px) scaleY(0.1); }
-}
+@keyframes faint { 0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(30px) scaleY(0.1)} }
+@keyframes enemy-enter { 0%{opacity:0;transform:translateX(60px)}100%{opacity:1;transform:translateX(0)} }
 
-.attack-anim { animation: attack-right 0.5s ease-out; }
-.hit-anim { animation: flash-hit 0.5s ease-out, shake 0.5s ease-out; }
-.enemy-attack-anim { animation: attack-left 0.5s ease-out; }
-.special-charge-anim { animation: special-charge 0.6s ease-in-out; }
-.faint-anim { animation: enemy-faint 0.6s ease-in forwards; }
+.atk-right { animation: atk-right 0.45s ease-out; }
+.atk-left { animation: atk-left 0.45s ease-out; }
+.hit-anim { animation: flash-hit 0.45s ease-out, shake 0.45s ease-out; }
+.charge-anim { animation: charge-glow 0.6s ease-in-out; }
+.faint-anim { animation: faint 0.5s ease-in forwards; }
+.enter-anim { animation: enemy-enter 0.4s ease-out; }
 
-/* Damage number */
 .damage-num {
-  position: absolute; font-size: 28px; color: #ef4444;
-  text-shadow: 2px 2px #000, -1px -1px #000;
-  pointer-events: none; animation: damage-float 1.2s ease-out forwards; z-index: 20;
+  position: absolute; font-size: 24px; color: #ef4444;
+  text-shadow: 2px 2px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
+  pointer-events: none; animation: dmg-float 1.1s ease-out forwards; z-index: 20;
 }
 .damage-num.heal { color: #22c55e; }
-.damage-num.critical { font-size: 36px; color: #fbbf24; }
-
-@keyframes damage-float {
-  0% { opacity: 1; transform: translateY(0) scale(0.5); }
-  20% { opacity: 1; transform: translateY(-20px) scale(1.3); }
-  50% { opacity: 1; transform: translateY(-40px) scale(1); }
-  100% { opacity: 0; transform: translateY(-70px) scale(0.8); }
+.damage-num.crit { font-size: 32px; color: #fbbf24; }
+.damage-num.miss { font-size: 18px; color: #9ca3af; }
+@keyframes dmg-float {
+  0%{opacity:1;transform:translateY(0) scale(0.5)}
+  15%{transform:translateY(-15px) scale(1.3)}
+  40%{opacity:1;transform:translateY(-35px) scale(1)}
+  100%{opacity:0;transform:translateY(-65px) scale(0.8)}
 }
 
-/* Level & streak indicators */
 .level-indicator {
-  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
-  background: rgba(0,0,0,0.7); color: #fbbf24; font-size: 9px;
-  padding: 4px 14px; border-radius: 10px; z-index: 10;
+  position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.65); color: #fbbf24; font-size: 8px;
+  padding: 4px 12px; border-radius: 10px; z-index: 11;
 }
 .streak-indicator {
-  position: absolute; top: 8px; right: 8px; font-size: 8px; color: #fff;
+  position: absolute; top: 6px; right: 6px; font-size: 7px; color: #fff;
   background: linear-gradient(135deg, #ef4444, #f97316);
-  padding: 3px 10px; border-radius: 8px; z-index: 10; display: none;
+  padding: 3px 8px; border-radius: 8px; z-index: 11; display: none;
   box-shadow: 0 2px 8px rgba(239,68,68,0.5);
 }
-.charge-indicator {
-  position: absolute; top: 30px; right: 8px; font-size: 7px; color: #c4b5fd;
-  background: rgba(139,92,246,0.7); padding: 3px 8px; border-radius: 8px;
-  z-index: 10; display: none;
-}
 
-/* ===== Battle UI Bottom ===== */
-.battle-ui {
-  background: #f5f5f5; border-top: 4px solid #333;
-  padding: 12px; display: flex; flex-direction: column; gap: 10px;
-}
-.message-box {
-  background: #fff; border: 3px solid #333; border-radius: 8px;
-  padding: 10px 12px; font-size: 10px; color: #333; line-height: 1.6;
-  min-height: 48px; display: flex; align-items: center;
-}
-
-.question-panel { display: none; flex-direction: column; gap: 10px; }
-.question-text {
-  font-size: 16px; color: #333; text-align: center; padding: 10px 8px;
-  background: #fff; border: 3px solid #333; border-radius: 8px;
-  line-height: 1.5;
-}
-
-.answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.answer-btn {
-  font-family: 'Press Start 2P', monospace; font-size: 12px; color: #fff;
-  border: none; padding: 14px 8px; cursor: pointer; border-radius: 8px;
-  transition: all 0.1s; position: relative; overflow: hidden;
-}
-.answer-btn:nth-child(1) { background: #3b82f6; box-shadow: 0 4px 0 #1d4ed8; }
-.answer-btn:nth-child(2) { background: #ef4444; box-shadow: 0 4px 0 #b91c1c; }
-.answer-btn:nth-child(3) { background: #22c55e; box-shadow: 0 4px 0 #15803d; }
-.answer-btn:nth-child(4) { background: #f97316; box-shadow: 0 4px 0 #c2410c; }
-.answer-btn:active { transform: translateY(4px); box-shadow: none; }
-.answer-btn.correct { background: #22c55e !important; animation: btn-correct 0.5s; }
-.answer-btn.wrong { background: #6b7280 !important; animation: btn-wrong 0.3s; }
-
-@keyframes btn-correct { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-@keyframes btn-wrong { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
-
-.action-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.action-btn {
-  font-family: 'Press Start 2P', monospace; font-size: 9px; color: #fff;
-  border: none; padding: 14px 8px; cursor: pointer; border-radius: 8px; transition: all 0.1s;
-}
-.action-btn.fight { background: #ef4444; box-shadow: 0 4px 0 #b91c1c; }
-.action-btn.heal { background: #22c55e; box-shadow: 0 4px 0 #15803d; }
-.action-btn.special { background: #8b5cf6; box-shadow: 0 4px 0 #6d28d9; }
-.action-btn.run { background: #6b7280; box-shadow: 0 4px 0 #4b5563; }
-.action-btn:active { transform: translateY(4px); box-shadow: none; }
-.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.timer-bar-container { height: 6px; background: #ddd; border-radius: 3px; overflow: hidden; }
-.timer-bar { height: 100%; background: #3b82f6; border-radius: 3px; transition: width 0.1s linear; }
-
-/* ===== Result Screen ===== */
-#result-screen {
-  position: absolute; inset: 0; display: none;
-  flex-direction: column; align-items: center; justify-content: center;
-  z-index: 80; padding: 30px;
-}
-#result-screen.victory { background: linear-gradient(180deg, #1e3a5f 0%, #0f2b1e 100%); }
-#result-screen.defeat { background: linear-gradient(180deg, #3b0f0f 0%, #1a0505 100%); }
-#result-screen .result-emoji { font-size: 80px; margin-bottom: 20px; }
-#result-screen h2 { font-size: 20px; margin-bottom: 16px; }
-#result-screen.victory h2 { color: #fbbf24; }
-#result-screen.defeat h2 { color: #ef4444; }
-
-.stats-box {
-  background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.2);
-  border-radius: 10px; padding: 16px 24px; margin-bottom: 24px;
-  width: 100%; max-width: 300px;
-}
-.stat-row { display: flex; justify-content: space-between; font-size: 9px; color: #ccc; padding: 6px 0; }
-.stat-row + .stat-row { border-top: 1px solid rgba(255,255,255,0.1); }
-.stat-val { color: #fbbf24; }
-
-.restart-btn {
-  font-family: 'Press Start 2P', monospace; font-size: 12px; color: #fff;
-  background: #3b82f6; border: none; padding: 14px 32px; cursor: pointer;
-  border-radius: 8px; box-shadow: 0 4px 0 #1d4ed8;
-}
-.restart-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #1d4ed8; }
-
-/* Screen flash */
 .screen-flash {
   position: absolute; inset: 0; z-index: 30; pointer-events: none;
-  animation: screen-flash-anim 0.3s ease-out forwards;
+  animation: flash-screen 0.25s ease-out forwards;
 }
-@keyframes screen-flash-anim {
-  0% { opacity: 0.8; }
-  100% { opacity: 0; }
+@keyframes flash-screen { 0%{opacity:0.7}100%{opacity:0} }
+
+/* ===== Battle UI ===== */
+.battle-ui {
+  background: linear-gradient(180deg, #f1f5f9, #e2e8f0);
+  border-top: 3px solid #374151; padding: 10px; display: flex; flex-direction: column; gap: 8px;
+}
+.message-box {
+  background: #fff; border: 2px solid #374151; border-radius: 8px;
+  padding: 10px; font-size: 9px; color: #1f2937; line-height: 1.6;
+  min-height: 44px; display: flex; align-items: center;
 }
 
-/* Responsive */
-@media (max-height: 700px) {
-  .battle-bg { min-height: 220px; }
-  .enemy-pokemon { width: 96px; height: 96px; top: 14%; }
-  .player-pokemon { width: 112px; height: 112px; }
-  .info-box { padding: 8px 10px; min-width: 150px; }
+.skill-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.skill-btn {
+  font-family: 'Press Start 2P', monospace; font-size: 7px; color: #fff;
+  border: none; padding: 12px 6px; cursor: pointer; border-radius: 8px;
+  transition: all 0.1s; line-height: 1.4; text-align: center;
+}
+.skill-btn:active { transform: translateY(3px); box-shadow: none !important; }
+.skill-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.skill-btn .skill-dmg { display: block; font-size: 6px; opacity: 0.7; margin-top: 3px; }
+
+.question-panel { display: none; flex-direction: column; gap: 8px; }
+.question-text {
+  font-size: 13px; color: #1f2937; text-align: center; padding: 10px 8px;
+  background: #fff; border: 2px solid #374151; border-radius: 8px; line-height: 1.6;
+}
+.answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.answer-btn {
+  font-family: 'Press Start 2P', monospace; font-size: 11px; color: #fff;
+  border: none; padding: 13px 6px; cursor: pointer; border-radius: 8px; transition: all 0.1s;
+}
+.answer-btn:nth-child(1){background:#6366f1;box-shadow:0 3px 0 #4338ca}
+.answer-btn:nth-child(2){background:#ef4444;box-shadow:0 3px 0 #b91c1c}
+.answer-btn:nth-child(3){background:#22c55e;box-shadow:0 3px 0 #15803d}
+.answer-btn:nth-child(4){background:#f97316;box-shadow:0 3px 0 #c2410c}
+.answer-btn:active { transform: translateY(3px); box-shadow: none; }
+.answer-btn.correct { background: #22c55e !important; animation: btn-ok 0.4s; }
+.answer-btn.wrong { background: #6b7280 !important; animation: btn-no 0.3s; }
+@keyframes btn-ok { 0%,100%{transform:scale(1)}50%{transform:scale(1.06)} }
+@keyframes btn-no { 0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)} }
+
+.timer-bar-container { height: 5px; background: #cbd5e1; border-radius: 3px; overflow: hidden; }
+.timer-bar { height: 100%; background: #6366f1; border-radius: 3px; transition: width 0.1s linear; }
+
+/* ===== Result ===== */
+#result-screen {
+  position: absolute; inset: 0; display: none; flex-direction: column;
+  align-items: center; justify-content: center; z-index: 80; padding: 24px;
+}
+#result-screen.victory { background: linear-gradient(180deg, #0f172a 0%, #14532d 100%); }
+#result-screen.defeat { background: linear-gradient(180deg, #450a0a 0%, #0f172a 100%); }
+#result-screen .result-emoji { font-size: 72px; margin-bottom: 16px; }
+#result-screen h2 { font-size: 18px; margin-bottom: 14px; }
+#result-screen.victory h2 { color: #fbbf24; }
+#result-screen.defeat h2 { color: #ef4444; }
+.stats-box {
+  background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 10px; padding: 14px 20px; margin-bottom: 20px; width: 100%; max-width: 280px;
+}
+.stat-row { display: flex; justify-content: space-between; font-size: 8px; color: #d1d5db; padding: 5px 0; }
+.stat-row+.stat-row { border-top: 1px solid rgba(255,255,255,0.08); }
+.stat-val { color: #fbbf24; }
+.restart-btn {
+  font-family: 'Press Start 2P', monospace; font-size: 11px; color: #fff;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none;
+  padding: 14px 28px; cursor: pointer; border-radius: 10px;
+  box-shadow: 0 4px 0 #4338ca;
+}
+.restart-btn:active { transform: translateY(4px); box-shadow: none; }
+
+@media(max-height:700px){
+  .battle-bg{min-height:220px}
+  .enemy-pokemon{width:96px;height:96px;top:12%}
+  .player-pokemon{width:112px;height:112px}
+  .info-box{padding:6px 8px;min-width:148px}
 }
 </style>
 </head>
 <body>
 
 <div id="game">
-  <!-- Title Screen -->
   <div id="title-screen">
     <div class="title-sprites">
       <img src="https://cdn.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon/25.png" alt="">
-      <img src="https://cdn.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon/4.png" alt="">
-      <img src="https://cdn.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon/7.png" alt="">
+      <img src="https://cdn.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon/6.png" alt="">
+      <img src="https://cdn.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon/150.png" alt="">
     </div>
     <h1>POKEMON<br>MATH BATTLE</h1>
-    <p class="subtitle">初中数学对战！</p>
+    <p class="subtitle">高中数学对战！</p>
     <button class="start-btn" onclick="showSelectScreen()">START</button>
   </div>
 
-  <!-- Select Screen -->
   <div id="select-screen">
     <h2>选择你的宝可梦！</h2>
     <div class="pokemon-grid" id="pokemon-grid"></div>
     <button class="confirm-btn" id="confirm-btn" onclick="startBattle()">出发！</button>
   </div>
 
-  <!-- Battle Scene -->
   <div id="battle-scene">
     <div class="battle-bg" id="battle-bg">
       <div class="level-indicator" id="level-indicator">ROUND 1</div>
       <div class="streak-indicator" id="streak-indicator"></div>
-      <div class="charge-indicator" id="charge-indicator"></div>
-
+      <div class="ground-enemy"></div>
+      <div class="ground-player"></div>
       <div class="info-box enemy-info">
         <span class="poke-name" id="enemy-name">???</span>
         <span class="poke-level" id="enemy-level">Lv.5</span>
@@ -385,9 +299,8 @@ body {
           <span class="hp-label">HP</span>
           <div class="hp-bar-bg"><div class="hp-bar-fill" id="enemy-hp-bar"></div></div>
         </div>
-        <div class="hp-text" id="enemy-hp-text">100 / 100</div>
+        <div class="hp-text" id="enemy-hp-text">100/100</div>
       </div>
-
       <div class="info-box player-info">
         <span class="poke-name" id="player-name">???</span>
         <span class="poke-level" id="player-level">Lv.5</span>
@@ -395,29 +308,19 @@ body {
           <span class="hp-label">HP</span>
           <div class="hp-bar-bg"><div class="hp-bar-fill" id="player-hp-bar"></div></div>
         </div>
-        <div class="hp-text" id="player-hp-text">100 / 100</div>
+        <div class="hp-text" id="player-hp-text">100/100</div>
         <div class="exp-bar-container"><div class="exp-bar-fill" id="exp-bar"></div></div>
       </div>
-
-      <div class="ground-enemy"></div>
-      <div class="ground-player"></div>
-
       <img class="enemy-pokemon" id="enemy-sprite" src="" alt="">
       <img class="player-pokemon" id="player-sprite" src="" alt="">
       <canvas id="fx-canvas"></canvas>
     </div>
-
     <div class="battle-ui">
-      <div class="message-box" id="message-box">你想要做什么？</div>
+      <div class="message-box" id="message-box">选择技能！</div>
       <div class="timer-bar-container" id="timer-container" style="display:none">
         <div class="timer-bar" id="timer-bar"></div>
       </div>
-      <div class="action-panel" id="action-panel">
-        <button class="action-btn fight" onclick="chooseAction('fight')">⚔️ 攻击</button>
-        <button class="action-btn heal" onclick="chooseAction('heal')">💊 回复</button>
-        <button class="action-btn special" id="special-btn" onclick="chooseAction('special')">✨ 必杀 (0/3)</button>
-        <button class="action-btn run" onclick="chooseAction('run')">🏃 逃跑</button>
-      </div>
+      <div class="skill-panel" id="skill-panel"></div>
       <div class="question-panel" id="question-panel">
         <div class="question-text" id="question-text"></div>
         <div class="answer-grid" id="answer-grid"></div>
@@ -425,7 +328,6 @@ body {
     </div>
   </div>
 
-  <!-- Result Screen -->
   <div id="result-screen">
     <div class="result-emoji" id="result-emoji"></div>
     <h2 id="result-title"></h2>
@@ -441,907 +343,779 @@ body {
 </div>
 
 <script>
-// ========== SPRITE URLS ==========
-const SPRITE = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon';
-const sprite = (id) => `${SPRITE}/${id}.png`;
-const spriteBack = (id) => `${SPRITE}/back/${id}.png`;
+// ===================================================================
+// SPRITE CDN
+// ===================================================================
+const S = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites/sprites/pokemon';
+const spr = id => `${S}/${id}.png`;
+const sprBack = id => `${S}/back/${id}.png`;
 
-// ========== POKEMON DATA ==========
-const TYPE_COLORS = {
-  electric: '#fbbf24', fire: '#ef4444', water: '#3b82f6', grass: '#22c55e',
-  normal: '#a3a3a3', ghost: '#8b5cf6', flying: '#93c5fd', bug: '#84cc16',
-  psychic: '#ec4899', poison: '#a855f7', rock: '#78716c', fighting: '#b45309',
-  ice: '#67e8f9', dragon: '#7c3aed',
+// ===================================================================
+// TYPE SYSTEM
+// ===================================================================
+const TC = {
+  electric:'#eab308', fire:'#ef4444', water:'#3b82f6', grass:'#22c55e',
+  normal:'#9ca3af', ghost:'#8b5cf6', flying:'#93c5fd', bug:'#84cc16',
+  psychic:'#ec4899', poison:'#a855f7', rock:'#78716c', fighting:'#b45309',
+  ice:'#67e8f9', dragon:'#7c3aed', dark:'#44403c', fairy:'#f9a8d4',
 };
 
+// ===================================================================
+// POKEMON DATA — each has 4 skills
+// ===================================================================
 const POKEMON = [
-  { name: '皮卡丘', id: 25, type: 'electric', hp: 110, atk: 28, spAtk: 50, skill: '十万伏特' },
-  { name: '小火龙', id: 4, type: 'fire', hp: 100, atk: 24, spAtk: 55, skill: '火焰喷射' },
-  { name: '杰尼龟', id: 7, type: 'water', hp: 130, atk: 22, spAtk: 45, skill: '水炮' },
-  { name: '妙蛙种子', id: 1, type: 'grass', hp: 120, atk: 24, spAtk: 48, skill: '飞叶快刀' },
-  { name: '伊布', id: 133, type: 'normal', hp: 115, atk: 26, spAtk: 46, skill: '高速星星' },
-  { name: '耿鬼', id: 94, type: 'ghost', hp: 90, atk: 20, spAtk: 65, skill: '暗影球' },
+  { name:'皮卡丘', id:25, type:'electric', hp:110, skills:[
+    { name:'电击', type:'electric', power:25, acc:100, desc:'基础电系攻击' },
+    { name:'十万伏特', type:'electric', power:50, acc:90, desc:'强力电击' },
+    { name:'电光一闪', type:'normal', power:30, acc:100, desc:'先制攻击' },
+    { name:'打雷', type:'electric', power:70, acc:70, desc:'最强电击！' },
+  ]},
+  { name:'喷火龙', id:6, type:'fire', hp:120, skills:[
+    { name:'火花', type:'fire', power:25, acc:100, desc:'基础火系攻击' },
+    { name:'火焰喷射', type:'fire', power:50, acc:90, desc:'强力喷射' },
+    { name:'龙之怒', type:'dragon', power:40, acc:100, desc:'龙系攻击' },
+    { name:'大字爆炎', type:'fire', power:75, acc:70, desc:'最强火焰！' },
+  ]},
+  { name:'水箭龟', id:9, type:'water', hp:140, skills:[
+    { name:'水枪', type:'water', power:25, acc:100, desc:'基础水系攻击' },
+    { name:'水炮', type:'water', power:55, acc:85, desc:'强力水炮' },
+    { name:'冰冻光线', type:'ice', power:45, acc:90, desc:'冰系攻击' },
+    { name:'破坏光线', type:'normal', power:80, acc:65, desc:'毁灭光线！' },
+  ]},
+  { name:'妙蛙花', id:3, type:'grass', hp:130, skills:[
+    { name:'藤鞭', type:'grass', power:25, acc:100, desc:'基础草系攻击' },
+    { name:'飞叶快刀', type:'grass', power:45, acc:95, desc:'锋利叶片' },
+    { name:'寄生种子', type:'grass', power:35, acc:90, desc:'吸血回复', heal:true },
+    { name:'日光束', type:'grass', power:70, acc:75, desc:'最强草系！' },
+  ]},
+  { name:'超梦', id:150, type:'psychic', hp:100, skills:[
+    { name:'念力', type:'psychic', power:30, acc:100, desc:'基础超能攻击' },
+    { name:'精神强念', type:'psychic', power:55, acc:90, desc:'强力念力' },
+    { name:'暗影球', type:'ghost', power:45, acc:95, desc:'幽灵系攻击' },
+    { name:'精神击破', type:'psychic', power:75, acc:70, desc:'终极超能！' },
+  ]},
+  { name:'耿鬼', id:94, type:'ghost', hp:95, skills:[
+    { name:'舌舔', type:'ghost', power:25, acc:100, desc:'基础幽灵攻击' },
+    { name:'暗影球', type:'ghost', power:50, acc:90, desc:'强力暗影' },
+    { name:'催眠术', type:'psychic', power:35, acc:85, desc:'超能攻击' },
+    { name:'灭亡之歌', type:'ghost', power:70, acc:70, desc:'终极诅咒！' },
+  ]},
 ];
 
-const ENEMY_POOL = [
-  { name: '小拉达', id: 19, type: 'normal' },
-  { name: '波波', id: 16, type: 'flying' },
-  { name: '独角虫', id: 13, type: 'bug' },
-  { name: '喇叭芽', id: 69, type: 'grass' },
-  { name: '小火马', id: 77, type: 'fire' },
-  { name: '可达鸭', id: 54, type: 'water' },
-  { name: '催眠貘', id: 96, type: 'psychic' },
-  { name: '臭泥', id: 88, type: 'poison' },
-  { name: '小磁怪', id: 81, type: 'electric' },
-  { name: '大岩蛇', id: 95, type: 'rock' },
-  { name: '腕力', id: 66, type: 'fighting' },
-  { name: '迷你龙', id: 147, type: 'dragon' },
+const ENEMIES = [
+  { name:'小拉达', id:19, type:'normal', atk:14 },
+  { name:'大针蜂', id:15, type:'bug', atk:18 },
+  { name:'烈雀', id:21, type:'flying', atk:16 },
+  { name:'阿柏蛇', id:23, type:'poison', atk:17 },
+  { name:'小火马', id:77, type:'fire', atk:19 },
+  { name:'可达鸭', id:54, type:'water', atk:16 },
+  { name:'催眠貘', id:96, type:'psychic', atk:18 },
+  { name:'小磁怪', id:81, type:'electric', atk:17 },
+  { name:'大岩蛇', id:95, type:'rock', atk:20 },
+  { name:'腕力', id:66, type:'fighting', atk:19 },
+  { name:'迷你龙', id:147, type:'dragon', atk:21 },
+  { name:'拉普拉斯', id:131, type:'ice', atk:22 },
 ];
 
-// ========== FX ENGINE (Canvas particles) ==========
-class FXEngine {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
-    this.particles = [];
-    this.running = false;
-  }
+// ===================================================================
+// HAND-CURATED HIGH SCHOOL MATH QUESTION BANK
+// All questions verified, answer is always options[0] before shuffle
+// ===================================================================
+const Q_BANK = [
+  // ---- 集合与逻辑 ----
+  {q:'集合A={1,2,3}，B={2,3,4}，A∩B=?', a:'{2,3}', w:['{1,4}','{1,2,3,4}','{3,4}']},
+  {q:'集合A={1,2,3}，B={2,3,4}，A∪B=?', a:'{1,2,3,4}', w:['{2,3}','{1,4}','{1,2}']},
+  {q:'若全集U={1,2,3,4,5}，A={1,3,5}，则∁ᵤA=?', a:'{2,4}', w:['{1,3,5}','{1,2,3}','{4,5}']},
+  {q:'空集是任何集合的子集，这句话对吗？', a:'对', w:['错','不一定','只对有限集合成立']},
+  {q:'"x>2"是"x>5"的什么条件？', a:'必要不充分', w:['充分不必要','充要','既不充分也不必要']},
+  {q:'"x²=4"是"x=2"的什么条件？', a:'必要不充分', w:['充分不必要','充要','既不充分也不必要']},
 
-  resize() {
-    const r = this.canvas.parentElement.getBoundingClientRect();
-    this.canvas.width = r.width;
-    this.canvas.height = r.height;
-  }
+  // ---- 函数基础 ----
+  {q:'f(x)=x²-2x+1的最小值是？', a:'0', w:['1','-1','2']},
+  {q:'f(x)=2x-1，则f(3)=?', a:'5', w:['3','7','1']},
+  {q:'y=x²的定义域是？', a:'(-∞,+∞)', w:['[0,+∞)','(0,+∞)','(-∞,0]']},
+  {q:'y=√x 的定义域是？', a:'[0,+∞)', w:['(-∞,+∞)','(0,+∞)','[1,+∞)']},
+  {q:'y=1/x 的定义域是？', a:'x≠0', w:['x>0','(-∞,+∞)','x≥0']},
+  {q:'f(x)=x³是奇函数还是偶函数？', a:'奇函数', w:['偶函数','非奇非偶','既奇又偶']},
+  {q:'f(x)=x²是奇函数还是偶函数？', a:'偶函数', w:['奇函数','非奇非偶','既奇又偶']},
+  {q:'f(x)=|x|是什么函数？', a:'偶函数', w:['奇函数','非奇非偶','单调递增']},
 
-  addParticle(p) {
-    this.particles.push({ life: 1, ...p });
-    if (!this.running) this.loop();
-  }
+  // ---- 指数与对数 ----
+  {q:'2³ = ?', a:'8', w:['6','9','12']},
+  {q:'log₂8 = ?', a:'3', w:['2','4','8']},
+  {q:'log₁₀100 = ?', a:'2', w:['10','1','3']},
+  {q:'ln e = ?', a:'1', w:['0','e','2']},
+  {q:'log₂1 = ?', a:'0', w:['1','2','-1']},
+  {q:'3⁰ = ?', a:'1', w:['0','3','-1']},
+  {q:'log₃27 = ?', a:'3', w:['9','2','27']},
+  {q:'2⁻¹ = ?', a:'0.5', w:['2','-2','-1']},
+  {q:'log₄16 = ?', a:'2', w:['4','3','8']},
+  {q:'(√2)² = ?', a:'2', w:['√2','4','1']},
+  {q:'9^(1/2) = ?', a:'3', w:['4.5','81','9']},
+  {q:'log₂32 = ?', a:'5', w:['4','6','16']},
 
-  // Burst of particles at a point
-  burst(x, y, count, color, opts = {}) {
-    for (let i = 0; i < count; i++) {
-      const angle = (Math.PI * 2 / count) * i + Math.random() * 0.5;
-      const speed = (opts.speed || 3) + Math.random() * (opts.speedVar || 2);
-      const size = (opts.size || 4) + Math.random() * (opts.sizeVar || 3);
-      this.addParticle({
-        x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-        size, color, decay: opts.decay || 0.02, gravity: opts.gravity || 0.05,
-        shape: opts.shape || 'circle',
-      });
+  // ---- 三角函数 ----
+  {q:'sin30° = ?', a:'1/2', w:['√2/2','√3/2','1']},
+  {q:'cos60° = ?', a:'1/2', w:['√3/2','√2/2','0']},
+  {q:'tan45° = ?', a:'1', w:['0','√2','1/2']},
+  {q:'sin90° = ?', a:'1', w:['0','-1','1/2']},
+  {q:'cos0° = ?', a:'1', w:['0','-1','1/2']},
+  {q:'sin0° = ?', a:'0', w:['1','-1','1/2']},
+  {q:'tan0° = ?', a:'0', w:['1','不存在','-1']},
+  {q:'cos90° = ?', a:'0', w:['1','-1','1/2']},
+  {q:'sin²30°+cos²30° = ?', a:'1', w:['0','1/2','3/4']},
+  {q:'sin60° = ?', a:'√3/2', w:['1/2','√2/2','1']},
+  {q:'cos30° = ?', a:'√3/2', w:['1/2','√2/2','1']},
+  {q:'tan60° = ?', a:'√3', w:['1','√2','3']},
+  {q:'sin45° = ?', a:'√2/2', w:['1/2','√3/2','1']},
+  {q:'cos180° = ?', a:'-1', w:['0','1','不存在']},
+  {q:'sin(π/6) = ?', a:'1/2', w:['√3/2','√2/2','0']},
+  {q:'cos(π/3) = ?', a:'1/2', w:['√3/2','0','√2/2']},
+  {q:'2sin30°cos30° = ?', a:'√3/2', w:['1/2','1','√2/2']},
+
+  // ---- 数列 ----
+  {q:'等差数列1,3,5,7,...第10项=?', a:'19', w:['20','21','18']},
+  {q:'等差数列2,5,8,11,...公差d=?', a:'3', w:['2','5','4']},
+  {q:'等比数列2,6,18,...第4项=?', a:'54', w:['36','48','72']},
+  {q:'等比数列1,2,4,8,...公比q=?', a:'2', w:['3','4','1']},
+  {q:'等差数列首项a₁=1,d=2,则S₅=?', a:'25', w:['15','20','30']},
+  {q:'等差数列前n项和公式是？', a:'n(a₁+aₙ)/2', w:['na₁+d','a₁·qⁿ','n²d/2']},
+  {q:'1+2+3+...+100 = ?', a:'5050', w:['5000','5100','4950']},
+  {q:'等比数列3,9,27,...公比是?', a:'3', w:['6','9','2']},
+
+  // ---- 不等式 ----
+  {q:'若a>b>0，则1/a与1/b的关系是？', a:'1/a<1/b', w:['1/a>1/b','1/a=1/b','不确定']},
+  {q:'|x-1|<3 的解集是？', a:'(-2,4)', w:['(-3,3)','(1,4)','(-2,2)']},
+  {q:'x²-4>0 的解集是？', a:'x<-2或x>2', w:['x>2','-2<x<2','x<-2']},
+  {q:'若a>0,b>0,a+b=4,则ab最大值=?', a:'4', w:['2','8','16']},
+  {q:'基本不等式: a+b≥?（a,b>0）', a:'2√(ab)', w:['ab','√(a+b)','(a+b)/2']},
+
+  // ---- 向量 ----
+  {q:'向量a=(1,2),b=(3,4),a+b=?', a:'(4,6)', w:['(3,8)','(4,8)','(2,6)']},
+  {q:'向量a=(1,2),b=(3,4),a·b=?', a:'11', w:['10','7','14']},
+  {q:'向量(3,4)的模|a|=?', a:'5', w:['7','12','25']},
+  {q:'若a⊥b，则a·b=?', a:'0', w:['1','-1','不确定']},
+  {q:'向量a=(2,0)的单位向量是?', a:'(1,0)', w:['(2,0)','(0,1)','(0.5,0)']},
+
+  // ---- 解析几何 ----
+  {q:'过(1,2)和(3,4)的直线斜率k=?', a:'1', w:['2','3','1/2']},
+  {q:'y=2x+1与y轴交点是?', a:'(0,1)', w:['(1,0)','(0,2)','(1,3)']},
+  {q:'圆x²+y²=25的半径是?', a:'5', w:['25','10','√5']},
+  {q:'两点(0,0)和(3,4)间的距离=?', a:'5', w:['7','12','25']},
+  {q:'直线y=x+1的斜率是?', a:'1', w:['0','-1','2']},
+  {q:'过原点斜率为2的直线方程是?', a:'y=2x', w:['y=x+2','y=2x+1','y=-2x']},
+  {q:'x²+y²=1表示什么图形？', a:'单位圆', w:['椭圆','双曲线','抛物线']},
+  {q:'直线2x+3y-6=0的x截距=?', a:'3', w:['2','6','-3']},
+
+  // ---- 概率统计 ----
+  {q:'抛一枚硬币，正面朝上的概率=?', a:'1/2', w:['1/3','1/4','1']},
+  {q:'掷一个骰子，出6的概率=?', a:'1/6', w:['1/3','1/2','6']},
+  {q:'从{1,2,3,4,5}中随机取一个偶数的概率=?', a:'2/5', w:['1/2','3/5','1/5']},
+  {q:'C(5,2) = ?', a:'10', w:['20','5','25']},
+  {q:'A(4,2) = ?', a:'12', w:['8','6','24']},
+  {q:'5! = ?', a:'120', w:['60','24','720']},
+  {q:'C(6,3) = ?', a:'20', w:['18','15','120']},
+  {q:'P(A∪B) = P(A)+P(B)-?', a:'P(A∩B)', w:['P(A)·P(B)','0','P(A)+P(B)']},
+
+  // ---- 导数基础 ----
+  {q:'f(x)=x²，f\'(x)=?', a:'2x', w:['x²','x','2']},
+  {q:'f(x)=x³，f\'(x)=?', a:'3x²', w:['x³','x²','3x']},
+  {q:'f(x)=sinx，f\'(x)=?', a:'cosx', w:['-sinx','-cosx','tanx']},
+  {q:'f(x)=eˣ，f\'(x)=?', a:'eˣ', w:['xeˣ⁻¹','1','lnx']},
+  {q:'f(x)=lnx，f\'(x)=?', a:'1/x', w:['x','lnx','eˣ']},
+  {q:'f(x)=cosx，f\'(x)=?', a:'-sinx', w:['sinx','cosx','-cosx']},
+  {q:'常数函数f(x)=5的导数=?', a:'0', w:['5','1','-5']},
+  {q:'f(x)=3x²+2x，f\'(x)=?', a:'6x+2', w:['3x+2','6x','3x²']},
+  {q:'f(x)=x⁴，f\'(x)=?', a:'4x³', w:['x⁴','3x⁴','4x']},
+  {q:'f(x)=√x，f\'(x)=?', a:'1/(2√x)', w:['√x','2√x','1/x']},
+
+  // ---- 立体几何 ----
+  {q:'正方体棱长为a，体积=?', a:'a³', w:['6a²','a²','3a³']},
+  {q:'球的体积公式是?', a:'4πr³/3', w:['πr²','4πr²','2πr³']},
+  {q:'球的表面积公式是?', a:'4πr²', w:['πr²','4πr³/3','2πr²']},
+  {q:'圆柱体积公式是?', a:'πr²h', w:['2πrh','πr²','πrh']},
+  {q:'正方体棱长a=2，对角线长=?', a:'2√3', w:['2√2','4','6']},
+
+  // ---- 二次函数与方程 ----
+  {q:'x²-5x+6=0的两根之和=?', a:'5', w:['6','-5','11']},
+  {q:'x²-5x+6=0的两根之积=?', a:'6', w:['5','-6','30']},
+  {q:'方程x²+2x+1=0的解是?', a:'x=-1', w:['x=1','x=±1','x=0']},
+  {q:'判别式Δ=b²-4ac<0，方程有？', a:'无实数根', w:['两个相等实根','两个不等实根','一个实根']},
+  {q:'y=x²-4x+3的对称轴是?', a:'x=2', w:['x=4','x=-2','x=3']},
+  {q:'y=(x-1)²+2的顶点坐标是?', a:'(1,2)', w:['(2,1)','(-1,2)','(1,-2)']},
+
+  // ---- 其他高考常考 ----
+  {q:'等比数列求和公式(q≠1): Sₙ=?', a:'a₁(1-qⁿ)/(1-q)', w:['na₁','a₁qⁿ','n(a₁+aₙ)/2']},
+  {q:'sin²α+cos²α = ?', a:'1', w:['0','sinα','2']},
+  {q:'tanα = sinα/?', a:'cosα', w:['sinα','tanα','1']},
+  {q:'(a+b)² = ?', a:'a²+2ab+b²', w:['a²+b²','a²+ab+b²','2a²+2b²']},
+  {q:'(a-b)² = ?', a:'a²-2ab+b²', w:['a²-b²','a²-ab+b²','2a²-2b²']},
+  {q:'a²-b² = ?', a:'(a+b)(a-b)', w:['(a-b)²','a²+b²','(a+b)²']},
+  {q:'i² = ?（i为虚数单位）', a:'-1', w:['1','i','-i']},
+  {q:'复数z=3+4i，|z|=?', a:'5', w:['7','25','3']},
+  {q:'sin(α+β)展开=?', a:'sinαcosβ+cosαsinβ', w:['sinαsinβ+cosαcosβ','sinαcosβ-cosαsinβ','cosαcosβ-sinαsinβ']},
+  {q:'cos2α = ?（用cos表示）', a:'2cos²α-1', w:['cos²α-1','1-2sin²α+cos²α','cosα']},
+];
+
+// Shuffle helper
+function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function randInt(a,b) { return Math.floor(Math.random()*(b-a+1))+a; }
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+
+// ===================================================================
+// FX ENGINE
+// ===================================================================
+class FX {
+  constructor(c){ this.c=c; this.x=c.getContext('2d'); this.p=[]; this.on=false; }
+  resize(){ const r=this.c.parentElement.getBoundingClientRect(); this.c.width=r.width; this.c.height=r.height; }
+  add(o){ this.p.push({life:1,...o}); if(!this.on)this.loop(); }
+
+  burst(x,y,n,colors,opts={}){
+    for(let i=0;i<n;i++){
+      const a=Math.PI*2/n*i+Math.random()*0.5;
+      const sp=(opts.sp||3)+Math.random()*(opts.sv||2);
+      const sz=(opts.sz||3)+Math.random()*(opts.szv||3);
+      this.add({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,sz,
+        c:colors[Math.floor(Math.random()*colors.length)],
+        dk:opts.dk||0.02,g:opts.g||0.05,sh:opts.sh||'c'});
     }
   }
 
-  // Fire effect
-  fireBlast(x, y) {
-    const colors = ['#ef4444', '#f97316', '#fbbf24', '#fff'];
-    for (let i = 0; i < 40; i++) {
-      const c = colors[Math.floor(Math.random() * colors.length)];
-      this.addParticle({
-        x: x + (Math.random() - 0.5) * 40,
-        y: y + (Math.random() - 0.5) * 20,
-        vx: (Math.random() - 0.5) * 6,
-        vy: -Math.random() * 5 - 2,
-        size: 3 + Math.random() * 6, color: c, decay: 0.025, gravity: -0.02,
-        shape: 'circle',
-      });
+  beam(x1,y1,x2,y2,colors,count=15){
+    for(let i=0;i<count;i++){
+      const t=Math.random();
+      const px=x1+(x2-x1)*t+(Math.random()-0.5)*20;
+      const py=y1+(y2-y1)*t+(Math.random()-0.5)*20;
+      this.add({x:px,y:py,vx:(Math.random()-0.5)*2,vy:(Math.random()-0.5)*2,
+        sz:2+Math.random()*4,c:colors[Math.floor(Math.random()*colors.length)],
+        dk:0.03,g:0,sh:'c',glow:true});
     }
   }
 
-  // Water effect
-  waterBlast(x, y) {
-    const colors = ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
-    for (let i = 0; i < 35; i++) {
-      const c = colors[Math.floor(Math.random() * colors.length)];
-      const angle = Math.random() * Math.PI * 2;
-      this.addParticle({
-        x, y, vx: Math.cos(angle) * (2 + Math.random() * 4),
-        vy: Math.sin(angle) * (2 + Math.random() * 4),
-        size: 3 + Math.random() * 5, color: c, decay: 0.02, gravity: 0.08,
-        shape: 'circle',
-      });
+  ring(x,y,r,colors,count=20){
+    for(let i=0;i<count;i++){
+      const a=Math.PI*2/count*i;
+      this.add({x:x+Math.cos(a)*r,y:y+Math.sin(a)*r,
+        vx:Math.cos(a)*1.5,vy:Math.sin(a)*1.5,
+        sz:3+Math.random()*3,c:colors[Math.floor(Math.random()*colors.length)],
+        dk:0.025,g:0,sh:'c',glow:true});
     }
   }
 
-  // Electric effect
-  electricBlast(x, y) {
-    const colors = ['#fbbf24', '#fde68a', '#fff', '#f59e0b'];
-    for (let i = 0; i < 30; i++) {
-      const c = colors[Math.floor(Math.random() * colors.length)];
-      this.addParticle({
-        x: x + (Math.random() - 0.5) * 60,
-        y: y + (Math.random() - 0.5) * 60,
-        vx: (Math.random() - 0.5) * 8,
-        vy: (Math.random() - 0.5) * 8,
-        size: 2 + Math.random() * 3, color: c, decay: 0.04, gravity: 0,
-        shape: 'bolt',
-      });
-    }
+  fire(x,y){
+    const c=['#ef4444','#f97316','#fbbf24','#fef3c7'];
+    for(let i=0;i<35;i++) this.add({x:x+(Math.random()-0.5)*40,y:y+(Math.random()-0.5)*15,
+      vx:(Math.random()-0.5)*5,vy:-Math.random()*5-2,
+      sz:3+Math.random()*6,c:c[randInt(0,3)],dk:0.025,g:-0.03,sh:'c'});
+  }
+  water(x,y){
+    const c=['#3b82f6','#60a5fa','#93c5fd','#dbeafe'];
+    for(let i=0;i<30;i++){const a=Math.random()*Math.PI*2;
+      this.add({x,y,vx:Math.cos(a)*(2+Math.random()*4),vy:Math.sin(a)*(2+Math.random()*4),
+        sz:3+Math.random()*5,c:c[randInt(0,3)],dk:0.02,g:0.08,sh:'c'});}
+  }
+  electric(x,y){
+    const c=['#fbbf24','#fef08a','#fff','#f59e0b'];
+    for(let i=0;i<25;i++) this.add({x:x+(Math.random()-0.5)*60,y:y+(Math.random()-0.5)*60,
+      vx:(Math.random()-0.5)*8,vy:(Math.random()-0.5)*8,
+      sz:2+Math.random()*3,c:c[randInt(0,3)],dk:0.04,g:0,sh:'b'});
+  }
+  grass(x,y){
+    const c=['#22c55e','#4ade80','#86efac','#dcfce7'];
+    for(let i=0;i<22;i++){const a=-Math.PI/2+(Math.random()-0.5)*Math.PI;
+      this.add({x:x+(Math.random()-0.5)*25,y,vx:Math.cos(a)*(3+Math.random()*3),
+        vy:Math.sin(a)*(3+Math.random()*3),sz:4+Math.random()*4,
+        c:c[randInt(0,3)],dk:0.018,g:0.03,sh:'l'});}
+  }
+  ghost(x,y){
+    const c=['#8b5cf6','#a78bfa','#7c3aed','#c4b5fd'];
+    for(let i=0;i<25;i++) this.add({x:x+(Math.random()-0.5)*50,y:y+(Math.random()-0.5)*50,
+      vx:(Math.random()-0.5)*3,vy:(Math.random()-0.5)*3,
+      sz:5+Math.random()*8,c:c[randInt(0,3)],dk:0.015,g:-0.02,sh:'c',glow:true});
+  }
+  psychic(x,y){
+    const c=['#ec4899','#f9a8d4','#a855f7','#fce7f3'];
+    this.ring(x,y,40,c,24);
+    this.ring(x,y,20,c,12);
+  }
+  ice(x,y){
+    const c=['#67e8f9','#a5f3fc','#cffafe','#fff'];
+    for(let i=0;i<30;i++) this.add({x:x+(Math.random()-0.5)*50,y:y+(Math.random()-0.5)*50,
+      vx:(Math.random()-0.5)*4,vy:(Math.random()-0.5)*4,
+      sz:3+Math.random()*4,c:c[randInt(0,3)],dk:0.02,g:0.02,sh:'s'});
+  }
+  dragon(x,y){
+    const c=['#7c3aed','#a855f7','#6d28d9','#ddd6fe'];
+    this.fire(x,y);
+    this.ring(x,y,50,c,16);
+  }
+  normal(x,y){
+    this.burst(x,y,18,['#fbbf24','#fde68a','#fff','#f59e0b'],{sp:3,sz:3,sh:'s'});
+  }
+  dark(x,y){
+    const c=['#1c1917','#44403c','#78716c','#a8a29e'];
+    for(let i=0;i<20;i++) this.add({x:x+(Math.random()-0.5)*60,y:y+(Math.random()-0.5)*60,
+      vx:(Math.random()-0.5)*4,vy:(Math.random()-0.5)*4,
+      sz:5+Math.random()*6,c:c[randInt(0,3)],dk:0.02,g:0,sh:'c',glow:true});
+  }
+  heal(x,y){
+    const c=['#22c55e','#86efac','#bbf7d0','#fff'];
+    for(let i=0;i<18;i++) this.add({x:x+(Math.random()-0.5)*50,y:y+Math.random()*15,
+      vx:(Math.random()-0.5)*1.5,vy:-Math.random()*3-1,
+      sz:3+Math.random()*4,c:c[randInt(0,3)],dk:0.015,g:-0.03,sh:'+'});
+  }
+  charge(x,y){
+    const c=['#fbbf24','#f97316','#ef4444','#fff'];
+    for(let i=0;i<45;i++){const a=Math.random()*Math.PI*2;const d=30+Math.random()*60;
+      this.add({x:x+Math.cos(a)*d,y:y+Math.sin(a)*d,
+        vx:-Math.cos(a)*(2+Math.random()*2),vy:-Math.sin(a)*(2+Math.random()*2),
+        sz:2+Math.random()*4,c:c[randInt(0,3)],dk:0.02,g:0,sh:'c',glow:true});}
   }
 
-  // Grass effect
-  grassBlast(x, y) {
-    const colors = ['#22c55e', '#4ade80', '#86efac', '#bbf7d0'];
-    for (let i = 0; i < 25; i++) {
-      const c = colors[Math.floor(Math.random() * colors.length)];
-      const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI;
-      this.addParticle({
-        x: x + (Math.random() - 0.5) * 30, y,
-        vx: Math.cos(angle) * (3 + Math.random() * 3),
-        vy: Math.sin(angle) * (3 + Math.random() * 3),
-        size: 4 + Math.random() * 4, color: c, decay: 0.018, gravity: 0.03,
-        shape: 'leaf',
-      });
-    }
+  typeFX(type,x,y){
+    const m={fire:'fire',water:'water',electric:'electric',grass:'grass',bug:'grass',
+      ghost:'ghost',psychic:'psychic',ice:'ice',dragon:'dragon',normal:'normal',
+      flying:'normal',rock:'normal',fighting:'fire',poison:'ghost',dark:'dark',fairy:'psychic'};
+    (this[m[type]||'normal'])(x,y);
   }
 
-  // Ghost/dark effect
-  ghostBlast(x, y) {
-    const colors = ['#8b5cf6', '#a78bfa', '#7c3aed', '#4c1d95'];
-    for (let i = 0; i < 30; i++) {
-      const c = colors[Math.floor(Math.random() * colors.length)];
-      this.addParticle({
-        x: x + (Math.random() - 0.5) * 50,
-        y: y + (Math.random() - 0.5) * 50,
-        vx: (Math.random() - 0.5) * 3,
-        vy: (Math.random() - 0.5) * 3,
-        size: 5 + Math.random() * 8, color: c, decay: 0.015, gravity: -0.02,
-        shape: 'circle', glow: true,
+  loop(){
+    this.on=true;
+    const go=()=>{
+      if(!this.p.length){this.on=false;return;}
+      this.x.clearRect(0,0,this.c.width,this.c.height);
+      this.p=this.p.filter(p=>{
+        p.life-=p.dk; p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.vx*=0.98;
+        if(p.life<=0)return false;
+        const ctx=this.x; ctx.save(); ctx.globalAlpha=Math.max(0,p.life);
+        if(p.glow){ctx.shadowColor=p.c;ctx.shadowBlur=12;}
+        ctx.fillStyle=p.c; ctx.translate(p.x,p.y);
+        const s=p.sz*p.life;
+        if(p.sh==='s'){this._star(ctx,s);}
+        else if(p.sh==='b'){this._bolt(ctx,s);}
+        else if(p.sh==='l'){ctx.rotate(Math.atan2(p.vy,p.vx));ctx.beginPath();ctx.ellipse(0,0,s,s*0.35,0,0,Math.PI*2);ctx.fill();}
+        else if(p.sh==='+'){ctx.fillRect(-s/6,-s/2,s/3,s);ctx.fillRect(-s/2,-s/6,s,s/3);}
+        else{ctx.beginPath();ctx.arc(0,0,s,0,Math.PI*2);ctx.fill();}
+        ctx.restore(); return true;
       });
-    }
-  }
-
-  // Normal/star effect
-  starBlast(x, y) {
-    const colors = ['#fbbf24', '#fde68a', '#fff', '#f59e0b'];
-    for (let i = 0; i < 20; i++) {
-      const c = colors[Math.floor(Math.random() * colors.length)];
-      const angle = (Math.PI * 2 / 20) * i;
-      this.addParticle({
-        x, y, vx: Math.cos(angle) * (3 + Math.random() * 2),
-        vy: Math.sin(angle) * (3 + Math.random() * 2),
-        size: 3 + Math.random() * 3, color: c, decay: 0.025, gravity: 0,
-        shape: 'star',
-      });
-    }
-  }
-
-  // Heal effect
-  healEffect(x, y) {
-    const colors = ['#22c55e', '#86efac', '#bbf7d0', '#fff'];
-    for (let i = 0; i < 20; i++) {
-      const c = colors[Math.floor(Math.random() * colors.length)];
-      this.addParticle({
-        x: x + (Math.random() - 0.5) * 60,
-        y: y + Math.random() * 20,
-        vx: (Math.random() - 0.5) * 1.5,
-        vy: -Math.random() * 3 - 1,
-        size: 3 + Math.random() * 4, color: c, decay: 0.015, gravity: -0.03,
-        shape: 'cross',
-      });
-    }
-  }
-
-  // Ultimate charge-up sparkle
-  chargeSparkle(x, y) {
-    const colors = ['#fbbf24', '#f97316', '#ef4444', '#fff'];
-    for (let i = 0; i < 50; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const dist = 30 + Math.random() * 60;
-      const c = colors[Math.floor(Math.random() * colors.length)];
-      this.addParticle({
-        x: x + Math.cos(angle) * dist,
-        y: y + Math.sin(angle) * dist,
-        vx: -Math.cos(angle) * (2 + Math.random() * 2),
-        vy: -Math.sin(angle) * (2 + Math.random() * 2),
-        size: 2 + Math.random() * 4, color: c, decay: 0.02, gravity: 0,
-        shape: 'circle', glow: true,
-      });
-    }
-  }
-
-  loop() {
-    this.running = true;
-    const animate = () => {
-      if (this.particles.length === 0) { this.running = false; return; }
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.particles = this.particles.filter(p => {
-        p.life -= p.decay;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += p.gravity;
-        p.vx *= 0.98;
-        if (p.life <= 0) return false;
-
-        this.ctx.save();
-        this.ctx.globalAlpha = Math.max(0, p.life);
-
-        if (p.glow) {
-          this.ctx.shadowColor = p.color;
-          this.ctx.shadowBlur = 15;
-        }
-
-        this.ctx.fillStyle = p.color;
-        this.ctx.translate(p.x, p.y);
-
-        if (p.shape === 'star') {
-          this.drawStar(p.size);
-        } else if (p.shape === 'bolt') {
-          this.drawBolt(p.size);
-        } else if (p.shape === 'leaf') {
-          this.ctx.rotate(Math.atan2(p.vy, p.vx));
-          this.ctx.beginPath();
-          this.ctx.ellipse(0, 0, p.size, p.size * 0.4, 0, 0, Math.PI * 2);
-          this.ctx.fill();
-        } else if (p.shape === 'cross') {
-          const s = p.size;
-          this.ctx.fillRect(-s/6, -s/2, s/3, s);
-          this.ctx.fillRect(-s/2, -s/6, s, s/3);
-        } else {
-          this.ctx.beginPath();
-          this.ctx.arc(0, 0, p.size * p.life, 0, Math.PI * 2);
-          this.ctx.fill();
-        }
-
-        this.ctx.restore();
-        return true;
-      });
-      requestAnimationFrame(animate);
+      requestAnimationFrame(go);
     };
-    animate();
+    go();
   }
-
-  drawStar(r) {
-    this.ctx.beginPath();
-    for (let i = 0; i < 5; i++) {
-      const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
-      const x = Math.cos(angle) * r;
-      const y = Math.sin(angle) * r;
-      i === 0 ? this.ctx.moveTo(x, y) : this.ctx.lineTo(x, y);
-      const innerAngle = angle + Math.PI / 5;
-      this.ctx.lineTo(Math.cos(innerAngle) * r * 0.4, Math.sin(innerAngle) * r * 0.4);
-    }
-    this.ctx.closePath();
-    this.ctx.fill();
-  }
-
-  drawBolt(s) {
-    this.ctx.beginPath();
-    this.ctx.moveTo(-s, -s); this.ctx.lineTo(s*0.3, -s*0.3);
-    this.ctx.lineTo(0, 0); this.ctx.lineTo(s, s);
-    this.ctx.lineTo(-s*0.3, s*0.3); this.ctx.lineTo(0, 0);
-    this.ctx.closePath();
-    this.ctx.fill();
-  }
-
-  clear() {
-    this.particles = [];
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  }
+  _star(ctx,r){ctx.beginPath();for(let i=0;i<5;i++){const a=Math.PI*2/5*i-Math.PI/2;ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);const ia=a+Math.PI/5;ctx.lineTo(Math.cos(ia)*r*0.4,Math.sin(ia)*r*0.4);}ctx.closePath();ctx.fill();}
+  _bolt(ctx,s){ctx.beginPath();ctx.moveTo(-s,-s);ctx.lineTo(s*0.3,-s*0.3);ctx.lineTo(0,0);ctx.lineTo(s,s);ctx.lineTo(-s*0.3,s*0.3);ctx.lineTo(0,0);ctx.closePath();ctx.fill();}
+  clear(){this.p=[];this.x.clearRect(0,0,this.c.width,this.c.height);}
 }
 
-// ========== GAME STATE ==========
+// ===================================================================
+// GAME STATE
+// ===================================================================
 let fx;
-let state = {
-  player: null, enemy: null,
-  playerHP: 0, playerMaxHP: 0,
-  enemyHP: 0, enemyMaxHP: 0,
-  round: 1, streak: 0, maxStreak: 0,
-  totalCorrect: 0, totalWrong: 0, defeated: 0,
-  currentAction: null, specialCharges: 0, healCount: 3,
-  timerInterval: null, busy: false, difficulty: 1, selectedIndex: -1,
+let usedQuestions = new Set();
+let st = {
+  player:null, enemy:null,
+  pHP:0, pMaxHP:0, eHP:0, eMaxHP:0,
+  round:1, streak:0, maxStreak:0,
+  correct:0, wrong:0, defeated:0,
+  curSkill:null, busy:false, selectedIdx:-1,
+  timerIv:null, qBank:[],
 };
 
-// ========== SCREENS ==========
-function showSelectScreen() {
-  document.getElementById('title-screen').style.display = 'none';
-  document.getElementById('select-screen').style.display = 'flex';
-
-  const grid = document.getElementById('pokemon-grid');
-  grid.innerHTML = '';
-  POKEMON.forEach((p, i) => {
-    const card = document.createElement('div');
-    card.className = 'pokemon-card';
-    card.innerHTML = `
-      <img src="${sprite(p.id)}" alt="${p.name}">
-      <span class="name">${p.name}</span>
-      <span class="type-badge" style="background:${TYPE_COLORS[p.type]}">${p.type}</span>
-      <span class="stats-preview">HP:${p.hp} ATK:${p.atk} SP:${p.spAtk}</span>
-    `;
-    card.onclick = () => selectPokemon(i);
-    grid.appendChild(card);
+// ===================================================================
+// SCREENS
+// ===================================================================
+function showSelectScreen(){
+  document.getElementById('title-screen').style.display='none';
+  document.getElementById('select-screen').style.display='flex';
+  const g=document.getElementById('pokemon-grid'); g.innerHTML='';
+  POKEMON.forEach((p,i)=>{
+    const d=document.createElement('div'); d.className='pokemon-card';
+    d.innerHTML=`<img src="${spr(p.id)}"><span class="name">${p.name}</span>
+      <span class="type-badge" style="background:${TC[p.type]}">${p.type}</span>
+      <span class="stats-preview">HP:${p.hp}</span>`;
+    d.onclick=()=>selPoke(i); g.appendChild(d);
   });
 }
-
-function selectPokemon(index) {
-  state.selectedIndex = index;
-  document.querySelectorAll('.pokemon-card').forEach((c, i) => {
-    c.classList.toggle('selected', i === index);
-  });
-  document.getElementById('confirm-btn').style.display = 'block';
+function selPoke(i){
+  st.selectedIdx=i;
+  document.querySelectorAll('.pokemon-card').forEach((c,j)=>c.classList.toggle('selected',j===i));
+  document.getElementById('confirm-btn').style.display='block';
 }
 
-function startBattle() {
-  if (state.selectedIndex < 0) return;
-  state.player = { ...POKEMON[state.selectedIndex] };
-  state.playerHP = state.player.hp;
-  state.playerMaxHP = state.player.hp;
-  state.round = 1; state.streak = 0; state.maxStreak = 0;
-  state.totalCorrect = 0; state.totalWrong = 0; state.defeated = 0;
-  state.specialCharges = 0; state.healCount = 3; state.difficulty = 1;
+function startBattle(){
+  if(st.selectedIdx<0)return;
+  st.player={...POKEMON[st.selectedIdx]};
+  st.pHP=st.player.hp; st.pMaxHP=st.player.hp;
+  st.round=1; st.streak=0; st.maxStreak=0;
+  st.correct=0; st.wrong=0; st.defeated=0; st.busy=false;
+  usedQuestions=new Set();
+  // Shuffle question bank
+  st.qBank=shuffle([...Q_BANK]);
 
-  document.getElementById('select-screen').style.display = 'none';
-  document.getElementById('battle-scene').style.display = 'flex';
+  document.getElementById('select-screen').style.display='none';
+  document.getElementById('battle-scene').style.display='flex';
 
-  // Init FX
-  const canvas = document.getElementById('fx-canvas');
-  fx = new FXEngine(canvas);
-  fx.resize();
-  window.addEventListener('resize', () => fx.resize());
+  const canvas=document.getElementById('fx-canvas');
+  fx=new FX(canvas); fx.resize();
+  window.onresize=()=>fx&&fx.resize();
 
-  document.getElementById('player-name').textContent = state.player.name;
-  document.getElementById('player-sprite').src = spriteBack(state.player.id);
+  document.getElementById('player-name').textContent=st.player.name;
+  document.getElementById('player-sprite').src=sprBack(st.player.id);
 
   spawnEnemy();
+  renderSkills();
   updateUI();
-  showMessage(`${state.player.name}，就决定是你了！`);
+  msg(`${st.player.name}，就决定是你了！`);
 }
 
-function spawnEnemy() {
-  const base = ENEMY_POOL[Math.floor(Math.random() * ENEMY_POOL.length)];
-  const level = Math.min(5 + state.round * 3, 50);
-  const hpScale = 0.8 + state.round * 0.3;
-  const maxHP = Math.floor(80 * hpScale);
+function spawnEnemy(){
+  const base=ENEMIES[randInt(0,ENEMIES.length-1)];
+  const lv=Math.min(5+st.round*3,50);
+  const scale=0.8+st.round*0.3;
+  const maxHP=Math.floor(80*scale);
+  st.enemy={...base, lv, atkPow:base.atk+st.round*2};
+  st.eHP=maxHP; st.eMaxHP=maxHP;
 
-  state.enemy = { ...base, level, atk: Math.floor(12 + state.round * 4) };
-  state.enemyHP = maxHP;
-  state.enemyMaxHP = maxHP;
-  state.difficulty = Math.min(1 + Math.floor(state.defeated / 2), 5);
-
-  document.getElementById('enemy-name').textContent = state.enemy.name;
-  document.getElementById('enemy-level').textContent = `Lv.${level}`;
-  document.getElementById('enemy-sprite').src = sprite(state.enemy.id);
-  document.getElementById('level-indicator').textContent = `ROUND ${state.round}`;
-
-  const playerLevel = 5 + state.defeated * 3;
-  document.getElementById('player-level').textContent = `Lv.${playerLevel}`;
+  document.getElementById('enemy-name').textContent=st.enemy.name;
+  document.getElementById('enemy-level').textContent=`Lv.${lv}`;
+  const eSprite=document.getElementById('enemy-sprite');
+  eSprite.src=spr(st.enemy.id);
+  eSprite.className='enemy-pokemon enter-anim';
+  setTimeout(()=>eSprite.classList.remove('enter-anim'),400);
+  document.getElementById('level-indicator').textContent=`ROUND ${st.round}`;
+  document.getElementById('player-level').textContent=`Lv.${5+st.defeated*3}`;
 }
 
-// ========== UI ==========
-function updateUI() {
-  const pPct = Math.max(0, state.playerHP / state.playerMaxHP * 100);
-  const pBar = document.getElementById('player-hp-bar');
-  pBar.style.width = pPct + '%';
-  pBar.style.backgroundColor = pPct > 50 ? 'var(--hp-green)' : pPct > 20 ? 'var(--hp-yellow)' : 'var(--hp-red)';
-  document.getElementById('player-hp-text').textContent = `${Math.max(0, state.playerHP)} / ${state.playerMaxHP}`;
+// ===================================================================
+// UI
+// ===================================================================
+function updateUI(){
+  const pp=Math.max(0,st.pHP/st.pMaxHP*100);
+  const pb=document.getElementById('player-hp-bar');
+  pb.style.width=pp+'%';
+  pb.style.backgroundColor=pp>50?'var(--hp-green)':pp>20?'var(--hp-yellow)':'var(--hp-red)';
+  document.getElementById('player-hp-text').textContent=`${Math.max(0,st.pHP)}/${st.pMaxHP}`;
 
-  const ePct = Math.max(0, state.enemyHP / state.enemyMaxHP * 100);
-  const eBar = document.getElementById('enemy-hp-bar');
-  eBar.style.width = ePct + '%';
-  eBar.style.backgroundColor = ePct > 50 ? 'var(--hp-green)' : ePct > 20 ? 'var(--hp-yellow)' : 'var(--hp-red)';
-  document.getElementById('enemy-hp-text').textContent = `${Math.max(0, state.enemyHP)} / ${state.enemyMaxHP}`;
+  const ep=Math.max(0,st.eHP/st.eMaxHP*100);
+  const eb=document.getElementById('enemy-hp-bar');
+  eb.style.width=ep+'%';
+  eb.style.backgroundColor=ep>50?'var(--hp-green)':ep>20?'var(--hp-yellow)':'var(--hp-red)';
+  document.getElementById('enemy-hp-text').textContent=`${Math.max(0,st.eHP)}/${st.eMaxHP}`;
 
-  // Streak
-  const streakEl = document.getElementById('streak-indicator');
-  if (state.streak >= 2) {
-    streakEl.style.display = 'block';
-    streakEl.textContent = `🔥 x${state.streak}`;
-  } else {
-    streakEl.style.display = 'none';
-  }
+  const si=document.getElementById('streak-indicator');
+  if(st.streak>=2){si.style.display='block';si.textContent=`🔥 x${st.streak}`;}
+  else si.style.display='none';
 
-  // Special charges
-  const spBtn = document.getElementById('special-btn');
-  spBtn.textContent = `✨ 必杀 (${state.specialCharges}/3)`;
-
-  const chargeEl = document.getElementById('charge-indicator');
-  if (state.specialCharges > 0 && state.specialCharges < 3) {
-    chargeEl.style.display = 'block';
-    chargeEl.textContent = '⚡'.repeat(state.specialCharges) + '○'.repeat(3 - state.specialCharges);
-  } else if (state.specialCharges >= 3) {
-    chargeEl.style.display = 'block';
-    chargeEl.textContent = '⚡⚡⚡ READY!';
-    chargeEl.style.background = 'rgba(251,191,36,0.8)';
-    chargeEl.style.color = '#7c2d12';
-  } else {
-    chargeEl.style.display = 'none';
-    chargeEl.style.background = 'rgba(139,92,246,0.7)';
-    chargeEl.style.color = '#c4b5fd';
-  }
-
-  // EXP bar
-  document.getElementById('exp-bar').style.width = (state.defeated / 5 * 100) + '%';
+  document.getElementById('exp-bar').style.width=(st.defeated/5*100)+'%';
 }
 
-function showMessage(text) {
-  document.getElementById('message-box').textContent = text;
+function msg(t){ document.getElementById('message-box').textContent=t; }
+
+function renderSkills(){
+  const panel=document.getElementById('skill-panel');
+  panel.innerHTML='';
+  const colors=['#ef4444','#6366f1','#22c55e','#f59e0b'];
+  const shadows=['#b91c1c','#4338ca','#15803d','#b45309'];
+  st.player.skills.forEach((sk,i)=>{
+    const btn=document.createElement('button');
+    btn.className='skill-btn';
+    btn.style.background=`linear-gradient(135deg, ${TC[sk.type]}, ${colors[i]})`;
+    btn.style.boxShadow=`0 3px 0 ${shadows[i]}`;
+    btn.innerHTML=`${sk.name}<span class="skill-dmg">威力:${sk.power} 命中:${sk.acc}</span>`;
+    btn.onclick=()=>useSkill(i);
+    panel.appendChild(btn);
+  });
 }
 
-// ========== ACTIONS ==========
-function chooseAction(action) {
-  if (state.busy) return;
-  if (action === 'run') { showResult(false); return; }
-
-  if (action === 'heal') {
-    if (state.healCount <= 0) { showMessage('药水用完了！'); return; }
-    state.currentAction = 'heal';
-    showMessage('答对回复HP！答错被攻击！');
-  } else if (action === 'special') {
-    if (state.specialCharges < 3) {
-      showMessage(`必杀技需要3次连击！(${state.specialCharges}/3)`);
-      return;
-    }
-    state.currentAction = 'special';
-    showMessage(`${state.player.skill}！答对造成巨大伤害！`);
-  } else {
-    state.currentAction = 'fight';
-    showMessage('答对就能攻击对手！');
-  }
+// ===================================================================
+// BATTLE FLOW
+// ===================================================================
+function useSkill(idx){
+  if(st.busy)return;
+  st.curSkill=st.player.skills[idx];
+  msg(`${st.player.name}使用${st.curSkill.name}！答对才能命中！`);
   showQuestion();
 }
 
-// ========== MATH QUESTIONS (初中水平) ==========
-function generateQuestion() {
-  const d = state.difficulty;
-  const types = ['neg_calc', 'linear_eq'];
-  if (d >= 1) types.push('fraction', 'power');
-  if (d >= 2) types.push('sqrt', 'percent', 'abs_val');
-  if (d >= 3) types.push('quadratic_simple', 'scientific', 'inequality');
-  if (d >= 4) types.push('factorize', 'system_eq');
-
-  const type = types[Math.floor(Math.random() * types.length)];
-  let answer, text;
-
-  switch (type) {
-    case 'neg_calc': {
-      // Negative number arithmetic
-      const a = randInt(-15, 15);
-      const b = randInt(-15, 15);
-      const ops = ['+', '-', '×'];
-      const op = ops[randInt(0, ops.length - 1)];
-      if (op === '+') { answer = a + b; text = `(${a}) + (${b}) = ?`; }
-      else if (op === '-') { answer = a - b; text = `(${a}) - (${b}) = ?`; }
-      else { answer = a * b; text = `(${a}) × (${b}) = ?`; }
-      break;
-    }
-    case 'linear_eq': {
-      // Solve: ax + b = c
-      const x = randInt(-10, 10);
-      const a = randInt(2, 8) * (Math.random() < 0.5 ? 1 : -1);
-      const b = randInt(-20, 20);
-      const c = a * x + b;
-      answer = x;
-      text = `${a}x + ${b > 0 ? b : `(${b})`} = ${c}，x = ?`;
-      break;
-    }
-    case 'fraction': {
-      // Fraction calculation
-      const d1 = randInt(2, 8);
-      const d2 = randInt(2, 8);
-      const n1 = randInt(1, d1 - 1);
-      const n2 = randInt(1, d2 - 1);
-      // Make sure result is integer for multiple choice
-      const lcm = lcmOf(d1, d2);
-      const sum = n1 * (lcm / d1) + n2 * (lcm / d2);
-      const g = gcd(Math.abs(sum), lcm);
-      if (sum % lcm === 0) {
-        answer = sum / lcm;
-        text = `${n1}/${d1} + ${n2}/${d2} = ?`;
-      } else {
-        // Fall back to simpler fraction
-        const a2 = randInt(1, 5);
-        const b2 = randInt(2, 6);
-        answer = a2 * b2;
-        text = `${a2 * b2}/${b2} = ?`;
-      }
-      break;
-    }
-    case 'power': {
-      // Powers and exponents
-      const base = randInt(2, 9);
-      const exp = randInt(2, 3);
-      answer = Math.pow(base, exp);
-      text = `${base}${exp === 2 ? '²' : '³'} = ?`;
-      break;
-    }
-    case 'sqrt': {
-      // Square roots of perfect squares
-      const roots = [4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144];
-      const val = roots[randInt(0, roots.length - 1)];
-      answer = Math.sqrt(val);
-      text = `√${val} = ?`;
-      break;
-    }
-    case 'percent': {
-      // Percentage calculation
-      const percents = [10, 20, 25, 30, 40, 50, 60, 75, 80];
-      const p = percents[randInt(0, percents.length - 1)];
-      const base2 = randInt(2, 10) * (100 / gcd(p, 100));
-      const actual = Math.min(base2, 500);
-      answer = actual * p / 100;
-      text = `${actual} 的 ${p}% = ?`;
-      break;
-    }
-    case 'abs_val': {
-      // Absolute value
-      const a = randInt(-20, -1);
-      const b = randInt(-10, 10);
-      answer = Math.abs(a) + b;
-      text = `|${a}| + (${b}) = ?`;
-      break;
-    }
-    case 'quadratic_simple': {
-      // x² = n, find positive x
-      const x2 = randInt(2, 12);
-      answer = x2;
-      text = `x² = ${x2 * x2}，x的正值 = ?`;
-      break;
-    }
-    case 'scientific': {
-      // Scientific notation
-      const coeff = randInt(1, 9);
-      const exp2 = randInt(3, 6);
-      answer = coeff * Math.pow(10, exp2);
-      text = `${coeff} × 10${toSuperscript(exp2)} = ?`;
-      break;
-    }
-    case 'inequality': {
-      // Simple inequality: find the integer solution count
-      // ax > b where a > 0, find smallest integer x
-      const a = randInt(2, 5);
-      const b = randInt(1, 20);
-      answer = Math.floor(b / a) + 1;
-      text = `${a}x > ${b}，x最小正整数 = ?`;
-      break;
-    }
-    case 'factorize': {
-      // Simple factoring: x² - a² = (x+a)(x-a), find a²
-      const a = randInt(2, 12);
-      answer = a * a;
-      text = `x² - ? = (x+${a})(x-${a})`;
-      break;
-    }
-    case 'system_eq': {
-      // Simple system: x + y = s, x - y = d, find x
-      const x3 = randInt(1, 15);
-      const y = randInt(1, 10);
-      const s = x3 + y;
-      const diff = x3 - y;
-      answer = x3;
-      text = `x+y=${s}, x-y=${diff}, x=?`;
-      break;
+function getQuestion(){
+  // Get next unused question from shuffled bank
+  for(let i=0;i<st.qBank.length;i++){
+    if(!usedQuestions.has(i)){
+      usedQuestions.add(i);
+      return st.qBank[i];
     }
   }
-
-  // Generate wrong answers
-  const options = new Set([answer]);
-  let attempts = 0;
-  while (options.size < 4 && attempts < 50) {
-    attempts++;
-    let wrong;
-    const range = Math.max(5, Math.abs(answer) * 0.4);
-    const offset = randInt(1, Math.ceil(range));
-    wrong = answer + (Math.random() < 0.5 ? offset : -offset);
-    if (wrong !== answer) options.add(wrong);
-  }
-  // Fill remaining if needed
-  let fill = 1;
-  while (options.size < 4) { options.add(answer + fill * 3); fill++; }
-
-  const shuffled = [...options].sort(() => Math.random() - 0.5);
-  return { text, answer, options: shuffled };
+  // All used, reshuffle
+  usedQuestions.clear();
+  st.qBank=shuffle([...Q_BANK]);
+  usedQuestions.add(0);
+  return st.qBank[0];
 }
 
-function toSuperscript(n) {
-  const sup = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
-  return String(n).split('').map(c => sup[c] || c).join('');
-}
+function showQuestion(){
+  st.busy=true;
+  const q=getQuestion();
+  const opts=shuffle([q.a,...q.w]);
+  st.curQ={text:q.q, answer:q.a, options:opts};
 
-function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
-function lcmOf(a, b) { return Math.abs(a * b) / gcd(a, b); }
-function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  document.getElementById('skill-panel').style.display='none';
+  const panel=document.getElementById('question-panel');
+  panel.style.display='flex';
+  document.getElementById('question-text').textContent=q.q;
 
-function showQuestion() {
-  const q = generateQuestion();
-  state.currentQuestion = q;
-  state.busy = true;
-
-  document.getElementById('action-panel').style.display = 'none';
-  document.getElementById('question-panel').style.display = 'flex';
-  document.getElementById('question-text').textContent = q.text;
-
-  const grid = document.getElementById('answer-grid');
-  grid.innerHTML = '';
-  q.options.forEach((opt) => {
-    const btn = document.createElement('button');
-    btn.className = 'answer-btn';
-    btn.textContent = opt;
-    btn.onclick = () => submitAnswer(opt, btn);
+  const grid=document.getElementById('answer-grid'); grid.innerHTML='';
+  opts.forEach(opt=>{
+    const btn=document.createElement('button');
+    btn.className='answer-btn'; btn.textContent=opt;
+    btn.onclick=()=>submitAnswer(opt,btn);
     grid.appendChild(btn);
   });
-
   startTimer();
 }
 
-function startTimer() {
-  const duration = Math.max(8, 20 - state.difficulty * 2);
-  const container = document.getElementById('timer-container');
-  const bar = document.getElementById('timer-bar');
-  container.style.display = 'block';
-  bar.style.width = '100%';
-
-  clearInterval(state.timerInterval);
-  const startTime = Date.now();
-  state.timerInterval = setInterval(() => {
-    const elapsed = (Date.now() - startTime) / 1000;
-    const remaining = Math.max(0, duration - elapsed);
-    bar.style.width = (remaining / duration * 100) + '%';
-    bar.style.backgroundColor = remaining > duration * 0.3 ? '#3b82f6' : '#ef4444';
-    if (remaining <= 0) { clearInterval(state.timerInterval); handleWrongAnswer(); }
-  }, 50);
+function startTimer(){
+  const dur=20;
+  const bar=document.getElementById('timer-bar');
+  const con=document.getElementById('timer-container');
+  con.style.display='block'; bar.style.width='100%';
+  clearInterval(st.timerIv);
+  const t0=Date.now();
+  st.timerIv=setInterval(()=>{
+    const rem=Math.max(0,dur-(Date.now()-t0)/1000);
+    bar.style.width=(rem/dur*100)+'%';
+    bar.style.backgroundColor=rem>dur*0.3?'#6366f1':'#ef4444';
+    if(rem<=0){clearInterval(st.timerIv);onWrong();}
+  },50);
 }
 
-// ========== ANSWER HANDLING ==========
-function submitAnswer(chosen, btnEl) {
-  if (!state.busy) return;
-  clearInterval(state.timerInterval);
-  document.getElementById('timer-container').style.display = 'none';
-
-  const correct = chosen === state.currentQuestion.answer;
-  const allBtns = document.querySelectorAll('.answer-btn');
-  allBtns.forEach(b => { b.onclick = null; });
-
-  allBtns.forEach(b => {
-    const val = parseFloat(b.textContent);
-    if (val === state.currentQuestion.answer) b.classList.add('correct');
-    else if (b === btnEl && !correct) b.classList.add('wrong');
+function submitAnswer(chosen,btn){
+  if(!st.busy)return;
+  clearInterval(st.timerIv);
+  document.getElementById('timer-container').style.display='none';
+  document.querySelectorAll('.answer-btn').forEach(b=>{b.onclick=null;});
+  document.querySelectorAll('.answer-btn').forEach(b=>{
+    if(b.textContent===st.curQ.answer)b.classList.add('correct');
+    else if(b===btn&&chosen!==st.curQ.answer)b.classList.add('wrong');
   });
-
-  correct ? handleCorrectAnswer() : handleWrongAnswer();
+  chosen===st.curQ.answer ? onCorrect() : onWrong();
 }
 
-async function handleCorrectAnswer() {
-  state.totalCorrect++;
-  state.streak++;
-  state.specialCharges = Math.min(state.specialCharges + 1, 3);
-  if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+async function onCorrect(){
+  st.correct++; st.streak++;
+  if(st.streak>st.maxStreak)st.maxStreak=st.streak;
 
-  let damage, healAmt;
-
-  if (state.currentAction === 'fight') {
-    damage = state.player.atk + (state.streak >= 3 ? Math.floor(state.player.atk * 0.5) : 0);
-    showMessage(`答对了！${state.player.name}使用了撞击！` + (state.streak >= 3 ? ' 连击加成！' : ''));
-  } else if (state.currentAction === 'special') {
-    damage = Math.floor(state.player.spAtk * 2.5);
-    state.specialCharges = 0;
-    showMessage(`${state.player.name}使用了${state.player.skill}！`);
-  } else if (state.currentAction === 'heal') {
-    healAmt = Math.floor(state.playerMaxHP * 0.3);
-    state.healCount--;
-    showMessage(`答对了！恢复了 ${healAmt} HP！(剩余:${state.healCount})`);
+  const sk=st.curSkill;
+  // Check accuracy
+  const hit=Math.random()*100<sk.acc;
+  if(!hit){
+    msg(`${st.player.name}的${sk.name}没有命中！`);
+    await sleep(400);
+    fx.resize();
+    showMiss('enemy');
+    await sleep(700);
+    endTurn(); return;
   }
+
+  // Streak bonus
+  const streakBonus=st.streak>=3?1.3:st.streak>=5?1.5:1;
+  let dmg=Math.floor(sk.power*streakBonus);
+  const isCrit=Math.random()<0.15;
+  if(isCrit)dmg=Math.floor(dmg*1.5);
+
+  const bonusText=st.streak>=3?` 连击x${st.streak}！`:'';
+  const critText=isCrit?' 暴击！':'';
+  msg(`答对了！${sk.name}命中！${critText}${bonusText}`);
+
+  await sleep(350);
+  fx.resize();
+
+  // Power >= 60: charge animation
+  if(sk.power>=60){
+    const pe=document.getElementById('player-sprite');
+    const pr=pe.getBoundingClientRect();
+    const br=document.getElementById('battle-bg').getBoundingClientRect();
+    pe.classList.add('charge-anim');
+    fx.charge(pr.left-br.left+pr.width/2, pr.top-br.top+pr.height/2);
+    await sleep(550);
+    pe.classList.remove('charge-anim');
+  }
+
+  await playAtk(true);
+
+  // FX at enemy
+  const ee=document.getElementById('enemy-sprite');
+  const er=ee.getBoundingClientRect();
+  const br2=document.getElementById('battle-bg').getBoundingClientRect();
+  const ex=er.left-br2.left+er.width/2, ey=er.top-br2.top+er.height/2;
+
+  fx.typeFX(sk.type,ex,ey);
+  if(sk.power>=50) screenFlash(TC[sk.type]||'#fff');
+  if(sk.power>=60){ fx.beam(br2.width*0.25,br2.height*0.7,ex,ey,
+    [TC[sk.type]||'#fff','#fff'],20); }
+
+  st.eHP=Math.max(0,st.eHP-dmg);
+  showDmg('enemy',dmg,false,isCrit);
+  updateUI();
+
+  // Heal skill
+  if(sk.heal){
+    const h=Math.floor(dmg*0.5);
+    st.pHP=Math.min(st.pMaxHP,st.pHP+h);
+    const pe2=document.getElementById('player-sprite');
+    const pr2=pe2.getBoundingClientRect();
+    fx.heal(pr2.left-br2.left+pr2.width/2,pr2.top-br2.top+pr2.height/2);
+    showDmg('player',h,true);
+    updateUI();
+  }
+
+  if(st.eHP<=0){ await sleep(400); await enemyDefeated(); return; }
+  await sleep(500);
+  endTurn();
+}
+
+async function onWrong(){
+  st.wrong++; st.streak=0;
+  msg(`答错了！${st.enemy.name}发动攻击！`);
+  updateUI();
 
   await sleep(400);
+  await playAtk(false);
+
   fx.resize();
+  const pe=document.getElementById('player-sprite');
+  const pr=pe.getBoundingClientRect();
+  const br=document.getElementById('battle-bg').getBoundingClientRect();
+  const px=pr.left-br.left+pr.width/2, py=pr.top-br.top+pr.height/2;
+  fx.typeFX(st.enemy.type,px,py);
 
-  if (damage) {
-    const isSpecial = state.currentAction === 'special';
-    if (isSpecial) {
-      // Charge-up animation
-      const playerEl = document.getElementById('player-sprite');
-      const pRect = playerEl.getBoundingClientRect();
-      const bgRect = document.getElementById('battle-bg').getBoundingClientRect();
-      const px = pRect.left - bgRect.left + pRect.width / 2;
-      const py = pRect.top - bgRect.top + pRect.height / 2;
-
-      playerEl.classList.add('special-charge-anim');
-      fx.chargeSparkle(px, py);
-      await sleep(600);
-      playerEl.classList.remove('special-charge-anim');
-    }
-
-    await playAttackAnimation(true);
-
-    // Spawn FX at enemy position
-    const enemyEl = document.getElementById('enemy-sprite');
-    const eRect = enemyEl.getBoundingClientRect();
-    const bgRect = document.getElementById('battle-bg').getBoundingClientRect();
-    const ex = eRect.left - bgRect.left + eRect.width / 2;
-    const ey = eRect.top - bgRect.top + eRect.height / 2;
-
-    // Type-based FX
-    if (isSpecial) {
-      playTypeFX(state.player.type, ex, ey);
-      screenFlash(TYPE_COLORS[state.player.type]);
-    } else {
-      fx.burst(ex, ey, 15, '#fff', { speed: 2, size: 3 });
-    }
-
-    state.enemyHP = Math.max(0, state.enemyHP - damage);
-    showDamageNumber('enemy', damage, false, isSpecial);
-    updateUI();
-
-    if (state.enemyHP <= 0) {
-      await sleep(500);
-      await handleEnemyDefeated();
-      return;
-    }
-  }
-
-  if (healAmt) {
-    const playerEl = document.getElementById('player-sprite');
-    const pRect = playerEl.getBoundingClientRect();
-    const bgRect = document.getElementById('battle-bg').getBoundingClientRect();
-    fx.healEffect(pRect.left - bgRect.left + pRect.width / 2, pRect.top - bgRect.top + pRect.height / 2);
-
-    state.playerHP = Math.min(state.playerMaxHP, state.playerHP + healAmt);
-    showDamageNumber('player', healAmt, true);
-    updateUI();
-  }
-
-  await sleep(600);
-  endTurn();
-}
-
-async function handleWrongAnswer() {
-  state.totalWrong++;
-  state.streak = 0;
-  state.specialCharges = 0;
-
-  showMessage(`答错了！${state.enemy.name}发动攻击！`);
+  const dmg=st.enemy.atkPow+randInt(0,5);
+  st.pHP=Math.max(0,st.pHP-dmg);
+  showDmg('player',dmg);
   updateUI();
 
+  if(st.pHP<=0){ await sleep(400); showResult(false); return; }
   await sleep(500);
-  await playAttackAnimation(false);
-
-  // Enemy attack FX
-  fx.resize();
-  const playerEl = document.getElementById('player-sprite');
-  const pRect = playerEl.getBoundingClientRect();
-  const bgRect = document.getElementById('battle-bg').getBoundingClientRect();
-  const px = pRect.left - bgRect.left + pRect.width / 2;
-  const py = pRect.top - bgRect.top + pRect.height / 2;
-  playTypeFX(state.enemy.type, px, py);
-
-  const damage = state.enemy.atk + randInt(0, 5);
-  state.playerHP = Math.max(0, state.playerHP - damage);
-  showDamageNumber('player', damage);
-  updateUI();
-
-  if (state.playerHP <= 0) { await sleep(500); showResult(false); return; }
-  await sleep(600);
   endTurn();
 }
 
-async function handleEnemyDefeated() {
-  state.defeated++;
-  state.round++;
-
-  const el = document.getElementById('enemy-sprite');
+async function enemyDefeated(){
+  st.defeated++; st.round++;
+  const el=document.getElementById('enemy-sprite');
   el.classList.add('faint-anim');
-  showMessage(`${state.enemy.name}被击败了！`);
-  await sleep(800);
 
-  if (state.defeated >= 5) { showResult(true); return; }
+  // Burst FX at enemy position
+  fx.resize();
+  const er=el.getBoundingClientRect();
+  const br=document.getElementById('battle-bg').getBoundingClientRect();
+  fx.burst(er.left-br.left+er.width/2, er.top-br.top+er.height/2,
+    30,['#fbbf24','#fff','#f97316'],{sp:4,sz:4,dk:0.015});
 
-  const hpGain = Math.floor(state.playerMaxHP * 0.2);
-  state.playerHP = Math.min(state.playerMaxHP, state.playerHP + hpGain);
+  msg(`${st.enemy.name}被击败了！`);
+  await sleep(900);
+
+  if(st.defeated>=5){ showResult(true); return; }
+
+  const heal=Math.floor(st.pMaxHP*0.2);
+  st.pHP=Math.min(st.pMaxHP,st.pHP+heal);
 
   el.classList.remove('faint-anim');
-  el.style.opacity = '1';
-  el.style.transform = '';
+  el.style.opacity='1'; el.style.transform='';
   spawnEnemy();
   updateUI();
-
-  showMessage(`野生的${state.enemy.name}出现了！(+${hpGain}HP)`);
-  await sleep(800);
+  msg(`野生的${st.enemy.name}出现了！(+${heal}HP)`);
+  await sleep(700);
   endTurn();
 }
 
-function endTurn() {
-  state.busy = false;
-  document.getElementById('question-panel').style.display = 'none';
-  document.getElementById('action-panel').style.display = 'grid';
-  showMessage('你想要做什么？');
+function endTurn(){
+  st.busy=false;
+  document.getElementById('question-panel').style.display='none';
+  document.getElementById('skill-panel').style.display='grid';
+  msg('选择技能！');
   updateUI();
 }
 
-// ========== FX HELPERS ==========
-function playTypeFX(type, x, y) {
-  switch (type) {
-    case 'fire': fx.fireBlast(x, y); break;
-    case 'water': case 'ice': fx.waterBlast(x, y); break;
-    case 'electric': fx.electricBlast(x, y); break;
-    case 'grass': case 'bug': fx.grassBlast(x, y); break;
-    case 'ghost': case 'psychic': case 'poison': case 'dragon': fx.ghostBlast(x, y); break;
-    default: fx.starBlast(x, y); break;
-  }
-}
-
-function screenFlash(color) {
-  const el = document.createElement('div');
-  el.className = 'screen-flash';
-  el.style.background = color;
-  document.getElementById('battle-bg').appendChild(el);
-  setTimeout(() => el.remove(), 300);
-}
-
-// ========== ANIMATIONS ==========
-async function playAttackAnimation(isPlayer) {
-  return new Promise(resolve => {
-    if (isPlayer) {
-      const el = document.getElementById('player-sprite');
-      el.classList.add('attack-anim');
-      setTimeout(() => {
-        el.classList.remove('attack-anim');
-        const target = document.getElementById('enemy-sprite');
-        target.classList.add('hit-anim');
-        setTimeout(() => target.classList.remove('hit-anim'), 500);
-        resolve();
-      }, 250);
+// ===================================================================
+// ANIMATIONS
+// ===================================================================
+async function playAtk(isPlayer){
+  return new Promise(res=>{
+    if(isPlayer){
+      const e=document.getElementById('player-sprite');
+      e.classList.add('atk-right');
+      setTimeout(()=>{e.classList.remove('atk-right');
+        const t=document.getElementById('enemy-sprite');
+        t.classList.add('hit-anim');
+        setTimeout(()=>t.classList.remove('hit-anim'),450);
+        res();
+      },220);
     } else {
-      const el = document.getElementById('enemy-sprite');
-      el.classList.add('enemy-attack-anim');
-      setTimeout(() => {
-        el.classList.remove('enemy-attack-anim');
-        const target = document.getElementById('player-sprite');
-        target.classList.add('hit-anim');
-        setTimeout(() => target.classList.remove('hit-anim'), 500);
-        resolve();
-      }, 250);
+      const e=document.getElementById('enemy-sprite');
+      e.classList.add('atk-left');
+      setTimeout(()=>{e.classList.remove('atk-left');
+        const t=document.getElementById('player-sprite');
+        t.classList.add('hit-anim');
+        setTimeout(()=>t.classList.remove('hit-anim'),450);
+        res();
+      },220);
     }
   });
 }
 
-function showDamageNumber(target, amount, isHeal = false, isCritical = false) {
-  const container = document.getElementById('battle-bg');
-  const el = document.createElement('div');
-  el.className = 'damage-num' + (isHeal ? ' heal' : '') + (isCritical ? ' critical' : '');
-  el.textContent = (isHeal ? '+' : '-') + amount;
-
-  if (target === 'enemy') {
-    el.style.right = '50px';
-    el.style.top = '30px';
-  } else {
-    el.style.left = '50px';
-    el.style.bottom = '80px';
-  }
-
-  container.appendChild(el);
-  setTimeout(() => el.remove(), 1200);
+function showDmg(target,amount,isHeal=false,isCrit=false){
+  const c=document.getElementById('battle-bg');
+  const el=document.createElement('div');
+  el.className='damage-num'+(isHeal?' heal':'')+(isCrit?' crit':'');
+  el.textContent=(isHeal?'+':'-')+amount;
+  if(target==='enemy'){el.style.right='45px';el.style.top='25px';}
+  else{el.style.left='45px';el.style.bottom='75px';}
+  c.appendChild(el);
+  setTimeout(()=>el.remove(),1100);
 }
 
-// ========== RESULT ==========
-function showResult(victory) {
-  clearInterval(state.timerInterval);
-  state.busy = true;
-
-  const screen = document.getElementById('result-screen');
-  screen.style.display = 'flex';
-  screen.className = victory ? 'victory' : 'defeat';
-
-  document.getElementById('result-emoji').textContent = victory ? '🏆' : '💀';
-  document.getElementById('result-title').textContent = victory ? '胜利！' : '战斗结束...';
-
-  const total = state.totalCorrect + state.totalWrong;
-  document.getElementById('stat-correct').textContent = state.totalCorrect;
-  document.getElementById('stat-wrong').textContent = state.totalWrong;
-  document.getElementById('stat-accuracy').textContent = total > 0 ? Math.round(state.totalCorrect / total * 100) + '%' : '0%';
-  document.getElementById('stat-streak').textContent = state.maxStreak;
-  document.getElementById('stat-defeated').textContent = state.defeated;
+function showMiss(target){
+  const c=document.getElementById('battle-bg');
+  const el=document.createElement('div');
+  el.className='damage-num miss';
+  el.textContent='MISS';
+  if(target==='enemy'){el.style.right='55px';el.style.top='35px';}
+  else{el.style.left='55px';el.style.bottom='85px';}
+  c.appendChild(el);
+  setTimeout(()=>el.remove(),1100);
 }
 
-function restartGame() {
-  document.getElementById('result-screen').style.display = 'none';
-  document.getElementById('battle-scene').style.display = 'none';
-  document.getElementById('select-screen').style.display = 'none';
-  document.getElementById('title-screen').style.display = 'flex';
-  state.selectedIndex = -1;
-  if (fx) fx.clear();
+function screenFlash(color){
+  const el=document.createElement('div');
+  el.className='screen-flash'; el.style.background=color;
+  document.getElementById('battle-bg').appendChild(el);
+  setTimeout(()=>el.remove(),250);
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+// ===================================================================
+// RESULT
+// ===================================================================
+function showResult(win){
+  clearInterval(st.timerIv); st.busy=true;
+  const s=document.getElementById('result-screen');
+  s.style.display='flex'; s.className=win?'victory':'defeat';
+  document.getElementById('result-emoji').textContent=win?'🏆':'💀';
+  document.getElementById('result-title').textContent=win?'胜利！':'战斗结束...';
+  const tot=st.correct+st.wrong;
+  document.getElementById('stat-correct').textContent=st.correct;
+  document.getElementById('stat-wrong').textContent=st.wrong;
+  document.getElementById('stat-accuracy').textContent=tot>0?Math.round(st.correct/tot*100)+'%':'0%';
+  document.getElementById('stat-streak').textContent=st.maxStreak;
+  document.getElementById('stat-defeated').textContent=st.defeated;
+}
+
+function restartGame(){
+  document.getElementById('result-screen').style.display='none';
+  document.getElementById('battle-scene').style.display='none';
+  document.getElementById('select-screen').style.display='none';
+  document.getElementById('title-screen').style.display='flex';
+  st.selectedIdx=-1;
+  if(fx)fx.clear();
+}
 </script>
-
 </body>
 </html>
