@@ -46,7 +46,9 @@ body {
   text-shadow: 0 0 10px #f59e0b, 0 0 30px #f59e0b, 2px 2px 0 #92400e;
   text-align: center; line-height: 2; margin-bottom: 8px;
 }
-#title-screen .subtitle { font-size: 9px; color: #a5b4fc; margin-bottom: 36px; letter-spacing: 1px; }
+#title-screen .subtitle { font-size: 9px; color: #a5b4fc; margin-bottom: 12px; letter-spacing: 1px; }
+.best-score { font-size: 7px; color: #94a3b8; margin-bottom: 24px; }
+.best-score span { color: #fbbf24; }
 .start-btn {
   font-family: 'Press Start 2P', monospace; font-size: 13px; color: #fff;
   background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none;
@@ -118,6 +120,14 @@ body {
 .exp-bar-container { margin-top: 2px; height: 3px; background: #374151; border-radius: 2px; overflow: hidden; }
 .exp-bar-fill { height: 100%; background: #60a5fa; border-radius: 2px; transition: width 0.5s; width: 0%; }
 
+.status-icons {
+  display: flex; gap: 2px; margin-top: 2px;
+}
+.status-icon {
+  font-size: 10px; line-height: 1; animation: status-pulse 1.5s infinite;
+}
+@keyframes status-pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+
 .enemy-pokemon {
   position: absolute; top: 14%; right: 12%;
   width: 120px; height: 120px; image-rendering: pixelated;
@@ -163,11 +173,25 @@ body {
 .damage-num.heal { color: #22c55e; }
 .damage-num.crit { font-size: 32px; color: #fbbf24; }
 .damage-num.miss { font-size: 18px; color: #9ca3af; }
+.damage-num.super { color: #ef4444; font-size: 28px; }
+.damage-num.resist { color: #9ca3af; font-size: 20px; }
 @keyframes dmg-float {
   0%{opacity:1;transform:translateY(0) scale(0.5)}
   15%{transform:translateY(-15px) scale(1.3)}
   40%{opacity:1;transform:translateY(-35px) scale(1)}
   100%{opacity:0;transform:translateY(-65px) scale(0.8)}
+}
+
+.effectiveness-text {
+  position: absolute; font-size: 8px; z-index: 21; pointer-events: none;
+  animation: eff-float 1.5s ease-out forwards;
+  text-shadow: 1px 1px #000;
+}
+.effectiveness-text.super { color: #fbbf24; }
+.effectiveness-text.resist { color: #94a3b8; }
+@keyframes eff-float {
+  0%{opacity:0;transform:translateY(10px)}20%{opacity:1;transform:translateY(0)}
+  70%{opacity:1}100%{opacity:0;transform:translateY(-20px)}
 }
 
 .level-indicator {
@@ -218,6 +242,16 @@ body {
 }
 
 .question-panel { display: none; flex-direction: column; gap: 8px; }
+.question-header {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.question-category {
+  font-size: 6px; color: #fff; padding: 2px 6px; border-radius: 4px;
+  background: #6366f1;
+}
+.question-diff {
+  font-size: 6px; color: #94a3b8;
+}
 .question-text {
   font-size: 13px; color: #1f2937; text-align: center; padding: 10px 8px;
   background: #fff; border: 2px solid #374151; border-radius: 8px; line-height: 1.6;
@@ -237,32 +271,44 @@ body {
 @keyframes btn-ok { 0%,100%{transform:scale(1)}50%{transform:scale(1.06)} }
 @keyframes btn-no { 0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)} }
 
+.explain-box {
+  background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;
+  padding: 8px 10px; font-size: 8px; color: #92400e; line-height: 1.6;
+  display: none;
+}
+
 .timer-bar-container { height: 5px; background: #cbd5e1; border-radius: 3px; overflow: hidden; }
 .timer-bar { height: 100%; background: #6366f1; border-radius: 3px; transition: width 0.1s linear; }
 
 /* ===== Result ===== */
 #result-screen {
   position: absolute; inset: 0; display: none; flex-direction: column;
-  align-items: center; justify-content: center; z-index: 80; padding: 24px;
+  align-items: center; justify-content: flex-start; z-index: 80; padding: 20px;
+  overflow-y: auto;
 }
 #result-screen.victory { background: linear-gradient(180deg, #0f172a 0%, #14532d 100%); }
 #result-screen.defeat { background: linear-gradient(180deg, #450a0a 0%, #0f172a 100%); }
-#result-screen .result-emoji { font-size: 72px; margin-bottom: 16px; }
-#result-screen h2 { font-size: 18px; margin-bottom: 14px; }
+#result-screen .result-emoji { font-size: 56px; margin: 12px 0 8px; }
+#result-screen h2 { font-size: 16px; margin-bottom: 10px; }
 #result-screen.victory h2 { color: #fbbf24; }
 #result-screen.defeat h2 { color: #ef4444; }
 .stats-box {
   background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.15);
-  border-radius: 10px; padding: 14px 20px; margin-bottom: 20px; width: 100%; max-width: 280px;
+  border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; width: 100%; max-width: 320px;
 }
-.stat-row { display: flex; justify-content: space-between; font-size: 8px; color: #d1d5db; padding: 5px 0; }
+.stats-box h3 { font-size: 8px; color: #fbbf24; margin-bottom: 8px; }
+.stat-row { display: flex; justify-content: space-between; font-size: 8px; color: #d1d5db; padding: 4px 0; }
 .stat-row+.stat-row { border-top: 1px solid rgba(255,255,255,0.08); }
 .stat-val { color: #fbbf24; }
+.topic-row { display: flex; justify-content: space-between; font-size: 6px; color: #94a3b8; padding: 3px 0; }
+.topic-bar { flex:1; margin: 0 6px; height: 4px; background: #374151; border-radius: 2px; overflow: hidden; align-self: center; }
+.topic-bar-fill { height: 100%; border-radius: 2px; background: #22c55e; }
+.new-record { font-size: 8px; color: #fbbf24; text-align: center; margin: 6px 0; animation: pulse-btn 1s infinite; }
 .restart-btn {
   font-family: 'Press Start 2P', monospace; font-size: 11px; color: #fff;
   background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none;
   padding: 14px 28px; cursor: pointer; border-radius: 10px;
-  box-shadow: 0 4px 0 #4338ca;
+  box-shadow: 0 4px 0 #4338ca; margin-top: 8px;
 }
 .restart-btn:active { transform: translateY(4px); box-shadow: none; }
 
@@ -285,6 +331,7 @@ body {
     </div>
     <h1>POKEMON<br>MATH BATTLE</h1>
     <p class="subtitle">高中数学对战！</p>
+    <p class="best-score" id="best-score"></p>
     <button class="start-btn" onclick="showSelectScreen()">START</button>
   </div>
 
@@ -308,6 +355,7 @@ body {
           <div class="hp-bar-bg"><div class="hp-bar-fill" id="enemy-hp-bar"></div></div>
         </div>
         <div class="hp-text" id="enemy-hp-text">100/100</div>
+        <div class="status-icons" id="enemy-status"></div>
       </div>
       <div class="info-box player-info">
         <span class="poke-name" id="player-name">???</span>
@@ -318,6 +366,7 @@ body {
         </div>
         <div class="hp-text" id="player-hp-text">100/100</div>
         <div class="exp-bar-container"><div class="exp-bar-fill" id="exp-bar"></div></div>
+        <div class="status-icons" id="player-status"></div>
       </div>
       <img class="enemy-pokemon" id="enemy-sprite" src="" alt="">
       <img class="player-pokemon" id="player-sprite" src="" alt="">
@@ -330,8 +379,13 @@ body {
       </div>
       <div class="skill-panel" id="skill-panel"></div>
       <div class="question-panel" id="question-panel">
+        <div class="question-header">
+          <span class="question-category" id="question-category"></span>
+          <span class="question-diff" id="question-diff"></span>
+        </div>
         <div class="question-text" id="question-text"></div>
         <div class="answer-grid" id="answer-grid"></div>
+        <div class="explain-box" id="explain-box"></div>
       </div>
     </div>
   </div>
@@ -339,12 +393,18 @@ body {
   <div id="result-screen">
     <div class="result-emoji" id="result-emoji"></div>
     <h2 id="result-title"></h2>
+    <div id="new-record" class="new-record" style="display:none"></div>
     <div class="stats-box">
+      <h3>战斗统计</h3>
       <div class="stat-row"><span>回答正确</span><span class="stat-val" id="stat-correct">0</span></div>
       <div class="stat-row"><span>回答错误</span><span class="stat-val" id="stat-wrong">0</span></div>
       <div class="stat-row"><span>正确率</span><span class="stat-val" id="stat-accuracy">0%</span></div>
       <div class="stat-row"><span>最高连击</span><span class="stat-val" id="stat-streak">0</span></div>
       <div class="stat-row"><span>击败对手</span><span class="stat-val" id="stat-defeated">0</span></div>
+    </div>
+    <div class="stats-box" id="topic-stats-box">
+      <h3>知识点分析</h3>
+      <div id="topic-stats"></div>
     </div>
     <button class="restart-btn" onclick="restartGame()">再来一局</button>
   </div>
@@ -361,24 +421,6 @@ const sprBack = id => `${CDN1}/back/${id}.png`;
 const sprFallback = id => `${CDN2}/${id}.png`;
 const sprBackFallback = id => `${CDN2}/back/${id}.png`;
 
-// Preload images with fallback
-function loadImg(src, fallback) {
-  return new Promise(res => {
-    const img = new Image();
-    img.onload = () => res(src);
-    img.onerror = () => {
-      if (fallback) {
-        const img2 = new Image();
-        img2.onload = () => res(fallback);
-        img2.onerror = () => res(src); // still use original
-        img2.src = fallback;
-      } else res(src);
-    };
-    img.src = src;
-  });
-}
-
-// Apply fallback to all <img> tags
 function imgFallback(el, fallbackSrc) {
   el.onerror = function() {
     if (this.dataset.tried) return;
@@ -386,6 +428,83 @@ function imgFallback(el, fallbackSrc) {
     this.src = fallbackSrc;
   };
 }
+
+// ===================================================================
+// SOUND ENGINE (Web Audio API, zero network)
+// ===================================================================
+const SFX = {
+  ctx: null,
+  init() {
+    if (this.ctx) return;
+    try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  },
+  play(type) {
+    if (!this.ctx) return;
+    const c = this.ctx;
+    const now = c.currentTime;
+    const g = c.createGain();
+    g.connect(c.destination);
+    g.gain.value = 0.15;
+
+    if (type === 'correct') {
+      // Rising two-note chime
+      const o = c.createOscillator(); o.type = 'square';
+      o.connect(g); o.frequency.setValueAtTime(523, now);
+      o.frequency.setValueAtTime(784, now + 0.1);
+      g.gain.setValueAtTime(0.15, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      o.start(now); o.stop(now + 0.25);
+    } else if (type === 'wrong') {
+      // Low buzz
+      const o = c.createOscillator(); o.type = 'sawtooth';
+      o.connect(g); o.frequency.value = 150;
+      g.gain.setValueAtTime(0.12, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      o.start(now); o.stop(now + 0.3);
+    } else if (type === 'hit') {
+      // Short impact noise
+      const buf = c.createBuffer(1, c.sampleRate * 0.08, c.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+      const s = c.createBufferSource(); s.buffer = buf; s.connect(g);
+      g.gain.value = 0.2;
+      s.start(now);
+    } else if (type === 'crit') {
+      // Dramatic hit
+      const o = c.createOscillator(); o.type = 'square';
+      o.connect(g); o.frequency.setValueAtTime(200, now);
+      o.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+      o.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+      g.gain.setValueAtTime(0.2, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      o.start(now); o.stop(now + 0.3);
+    } else if (type === 'defeat') {
+      // Victory fanfare
+      const notes = [523, 659, 784, 1047];
+      notes.forEach((f, i) => {
+        const o = c.createOscillator(); o.type = 'square';
+        const ng = c.createGain(); ng.connect(c.destination);
+        o.connect(ng); o.frequency.value = f;
+        ng.gain.setValueAtTime(0.1, now + i * 0.15);
+        ng.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.3);
+        o.start(now + i * 0.15); o.stop(now + i * 0.15 + 0.3);
+      });
+    } else if (type === 'charge') {
+      const o = c.createOscillator(); o.type = 'sine';
+      o.connect(g); o.frequency.setValueAtTime(200, now);
+      o.frequency.exponentialRampToValueAtTime(1200, now + 0.5);
+      g.gain.setValueAtTime(0.08, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+      o.start(now); o.stop(now + 0.55);
+    } else if (type === 'select') {
+      const o = c.createOscillator(); o.type = 'square';
+      o.connect(g); o.frequency.value = 660;
+      g.gain.setValueAtTime(0.08, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      o.start(now); o.stop(now + 0.08);
+    }
+  }
+};
 
 // ===================================================================
 // TYPE SYSTEM
@@ -403,45 +522,71 @@ const TI = {
   ice:'❄️', dragon:'🐲', dark:'🌑', fairy:'✨',
 };
 
+// Type effectiveness chart (attacker -> defender -> multiplier)
+const TYPE_EFF = {
+  fire:   {grass:2, ice:2, bug:2, water:0.5, rock:0.5, fire:0.5, dragon:0.5},
+  water:  {fire:2, rock:2, ice:0.5, water:0.5, grass:0.5, dragon:0.5},
+  electric:{water:2, flying:2, electric:0.5, grass:0.5, dragon:0.5},
+  grass:  {water:2, rock:2, grass:0.5, fire:0.5, flying:0.5, bug:0.5, poison:0.5, dragon:0.5},
+  ice:    {grass:2, flying:2, dragon:2, fire:0.5, water:0.5, ice:0.5},
+  psychic:{fighting:2, poison:2, psychic:0.5, dark:0},
+  ghost:  {ghost:2, psychic:2, normal:0, dark:0.5},
+  dragon: {dragon:2, fairy:0},
+  dark:   {ghost:2, psychic:2, fighting:0.5, dark:0.5, fairy:0.5},
+  fighting:{normal:2, rock:2, ice:2, dark:2, ghost:0, flying:0.5, psychic:0.5, fairy:0.5},
+  normal: {ghost:0, rock:0.5},
+  flying: {grass:2, fighting:2, bug:2, electric:0.5, rock:0.5},
+  poison: {grass:2, fairy:2, poison:0.5, rock:0.5, ghost:0.5},
+  rock:   {fire:2, ice:2, flying:2, bug:2, fighting:0.5},
+  bug:    {grass:2, psychic:2, dark:2, fire:0.5, flying:0.5, ghost:0.5, fairy:0.5},
+  fairy:  {fighting:2, dragon:2, dark:2, fire:0.5, poison:0.5},
+};
+
+function getTypeMultiplier(atkType, defType) {
+  const chart = TYPE_EFF[atkType];
+  if (!chart) return 1;
+  return chart[defType] ?? 1;
+}
+
 // ===================================================================
 // POKEMON DATA — each has 4 skills
 // ===================================================================
 const POKEMON = [
   { name:'皮卡丘', id:25, type:'electric', hp:110, skills:[
-    { name:'电击', type:'electric', power:25, acc:100, desc:'基础电系攻击' },
-    { name:'十万伏特', type:'electric', power:50, acc:90, desc:'强力电击' },
-    { name:'电光一闪', type:'normal', power:30, acc:100, desc:'先制攻击' },
-    { name:'打雷', type:'electric', power:70, acc:70, desc:'最强电击！' },
+    { name:'电击', type:'electric', power:25, acc:100 },
+    { name:'十万伏特', type:'electric', power:50, acc:90 },
+    { name:'电光一闪', type:'normal', power:30, acc:100 },
+    { name:'打雷', type:'electric', power:70, acc:70 },
   ]},
   { name:'喷火龙', id:6, type:'fire', hp:120, skills:[
-    { name:'火花', type:'fire', power:25, acc:100, desc:'基础火系攻击' },
-    { name:'火焰喷射', type:'fire', power:50, acc:90, desc:'强力喷射' },
-    { name:'龙之怒', type:'dragon', power:40, acc:100, desc:'龙系攻击' },
-    { name:'大字爆炎', type:'fire', power:75, acc:70, desc:'最强火焰！' },
+    { name:'火花', type:'fire', power:25, acc:100 },
+    { name:'火焰喷射', type:'fire', power:50, acc:90 },
+    { name:'龙之怒', type:'dragon', power:40, acc:100 },
+    { name:'大字爆炎', type:'fire', power:75, acc:70 },
   ]},
   { name:'水箭龟', id:9, type:'water', hp:140, skills:[
-    { name:'水枪', type:'water', power:25, acc:100, desc:'基础水系攻击' },
-    { name:'水炮', type:'water', power:55, acc:85, desc:'强力水炮' },
-    { name:'冰冻光线', type:'ice', power:45, acc:90, desc:'冰系攻击' },
-    { name:'破坏光线', type:'normal', power:80, acc:65, desc:'毁灭光线！' },
+    { name:'水枪', type:'water', power:25, acc:100 },
+    { name:'水炮', type:'water', power:55, acc:85 },
+    { name:'冰冻光线', type:'ice', power:45, acc:90 },
+    { name:'破坏光线', type:'normal', power:80, acc:65 },
   ]},
   { name:'妙蛙花', id:3, type:'grass', hp:130, skills:[
-    { name:'藤鞭', type:'grass', power:25, acc:100, desc:'基础草系攻击' },
-    { name:'飞叶快刀', type:'grass', power:45, acc:95, desc:'锋利叶片' },
-    { name:'寄生种子', type:'grass', power:35, acc:90, desc:'吸血回复', heal:true },
-    { name:'日光束', type:'grass', power:70, acc:75, desc:'最强草系！' },
+    { name:'藤鞭', type:'grass', power:25, acc:100 },
+    { name:'飞叶快刀', type:'grass', power:45, acc:95 },
+    { name:'寄生种子', type:'grass', power:35, acc:90, heal:true },
+    { name:'日光束', type:'grass', power:70, acc:75 },
   ]},
   { name:'超梦', id:150, type:'psychic', hp:100, skills:[
-    { name:'念力', type:'psychic', power:30, acc:100, desc:'基础超能攻击' },
-    { name:'精神强念', type:'psychic', power:55, acc:90, desc:'强力念力' },
-    { name:'暗影球', type:'ghost', power:45, acc:95, desc:'幽灵系攻击' },
-    { name:'精神击破', type:'psychic', power:75, acc:70, desc:'终极超能！' },
+    { name:'念力', type:'psychic', power:30, acc:100 },
+    { name:'精神强念', type:'psychic', power:55, acc:90 },
+    { name:'暗影球', type:'ghost', power:45, acc:95 },
+    { name:'精神击破', type:'psychic', power:75, acc:70 },
   ]},
   { name:'耿鬼', id:94, type:'ghost', hp:95, skills:[
-    { name:'舌舔', type:'ghost', power:25, acc:100, desc:'基础幽灵攻击' },
-    { name:'暗影球', type:'ghost', power:50, acc:90, desc:'强力暗影' },
-    { name:'催眠术', type:'psychic', power:35, acc:85, desc:'超能攻击' },
-    { name:'灭亡之歌', type:'ghost', power:70, acc:70, desc:'终极诅咒！' },
+    { name:'舌舔', type:'ghost', power:25, acc:100 },
+    { name:'暗影球', type:'ghost', power:50, acc:90 },
+    { name:'催眠术', type:'psychic', power:35, acc:85 },
+    { name:'灭亡之歌', type:'ghost', power:70, acc:70 },
   ]},
 ];
 
@@ -462,142 +607,180 @@ const ENEMIES = [
 
 // ===================================================================
 // HAND-CURATED HIGH SCHOOL MATH QUESTION BANK
-// All questions verified, answer is always options[0] before shuffle
+// cat: category for topic tracking, diff: 1=easy 2=medium 3=hard
 // ===================================================================
 const Q_BANK = [
   // ---- 集合与逻辑 ----
-  {q:'集合A={1,2,3}，B={2,3,4}，A∩B=?', a:'{2,3}', w:['{1,4}','{1,2,3,4}','{3,4}']},
-  {q:'集合A={1,2,3}，B={2,3,4}，A∪B=?', a:'{1,2,3,4}', w:['{2,3}','{1,4}','{1,2}']},
-  {q:'若全集U={1,2,3,4,5}，A={1,3,5}，则∁ᵤA=?', a:'{2,4}', w:['{1,3,5}','{1,2,3}','{4,5}']},
-  {q:'空集是任何集合的子集，这句话对吗？', a:'对', w:['错','不一定','只对有限集合成立']},
-  {q:'"x>2"是"x>5"的什么条件？', a:'必要不充分', w:['充分不必要','充要','既不充分也不必要']},
-  {q:'"x²=4"是"x=2"的什么条件？', a:'必要不充分', w:['充分不必要','充要','既不充分也不必要']},
+  {q:'集合A={1,2,3}，B={2,3,4}，A∩B=?', a:'{2,3}', w:['{1,4}','{1,2,3,4}','{3,4}'], cat:'集合', diff:1},
+  {q:'集合A={1,2,3}，B={2,3,4}，A∪B=?', a:'{1,2,3,4}', w:['{2,3}','{1,4}','{1,2}'], cat:'集合', diff:1},
+  {q:'若全集U={1,2,3,4,5}，A={1,3,5}，则∁ᵤA=?', a:'{2,4}', w:['{1,3,5}','{1,2,3}','{4,5}'], cat:'集合', diff:1},
+  {q:'空集是任何集合的子集，这句话对吗？', a:'对', w:['错','不一定','只对有限集合成立'], cat:'集合', diff:1},
+  {q:'"x>2"是"x>5"的什么条件？', a:'必要不充分', w:['充分不必要','充要','既不充分也不必要'], cat:'逻辑', diff:2},
+  {q:'"x²=4"是"x=2"的什么条件？', a:'必要不充分', w:['充分不必要','充要','既不充分也不必要'], cat:'逻辑', diff:2},
+  {q:'命题"若p则q"的逆否命题是？', a:'若非q则非p', w:['若q则p','若非p则非q','若p则非q'], cat:'逻辑', diff:2},
+  {q:'A={x|x²<4}用区间表示=?', a:'(-2,2)', w:['[-2,2]','(0,4)','(-4,4)'], cat:'集合', diff:2},
 
   // ---- 函数基础 ----
-  {q:'f(x)=x²-2x+1的最小值是？', a:'0', w:['1','-1','2']},
-  {q:'f(x)=2x-1，则f(3)=?', a:'5', w:['3','7','1']},
-  {q:'y=x²的定义域是？', a:'(-∞,+∞)', w:['[0,+∞)','(0,+∞)','(-∞,0]']},
-  {q:'y=√x 的定义域是？', a:'[0,+∞)', w:['(-∞,+∞)','(0,+∞)','[1,+∞)']},
-  {q:'y=1/x 的定义域是？', a:'x≠0', w:['x>0','(-∞,+∞)','x≥0']},
-  {q:'f(x)=x³是奇函数还是偶函数？', a:'奇函数', w:['偶函数','非奇非偶','既奇又偶']},
-  {q:'f(x)=x²是奇函数还是偶函数？', a:'偶函数', w:['奇函数','非奇非偶','既奇又偶']},
-  {q:'f(x)=|x|是什么函数？', a:'偶函数', w:['奇函数','非奇非偶','单调递增']},
+  {q:'f(x)=x²-2x+1的最小值是？', a:'0', w:['1','-1','2'], cat:'函数', diff:1},
+  {q:'f(x)=2x-1，则f(3)=?', a:'5', w:['3','7','1'], cat:'函数', diff:1},
+  {q:'y=x²的定义域是？', a:'(-∞,+∞)', w:['[0,+∞)','(0,+∞)','(-∞,0]'], cat:'函数', diff:1},
+  {q:'y=√x 的定义域是？', a:'[0,+∞)', w:['(-∞,+∞)','(0,+∞)','[1,+∞)'], cat:'函数', diff:1},
+  {q:'y=1/x 的定义域是？', a:'x≠0', w:['x>0','(-∞,+∞)','x≥0'], cat:'函数', diff:1},
+  {q:'f(x)=x³是奇函数还是偶函数？', a:'奇函数', w:['偶函数','非奇非偶','既奇又偶'], cat:'函数', diff:1},
+  {q:'f(x)=x²是奇函数还是偶函数？', a:'偶函数', w:['奇函数','非奇非偶','既奇又偶'], cat:'函数', diff:1},
+  {q:'f(x)=|x|是什么函数？', a:'偶函数', w:['奇函数','非奇非偶','单调递增'], cat:'函数', diff:1},
+  {q:'y=x²-4x+3的值域是？', a:'[-1,+∞)', w:['[0,+∞)','[3,+∞)','(-∞,3]'], cat:'函数', diff:2},
+  {q:'函数y=ax+b过(1,3)和(2,5),则a=?', a:'2', w:['3','1','5'], cat:'函数', diff:2},
 
   // ---- 指数与对数 ----
-  {q:'2³ = ?', a:'8', w:['6','9','12']},
-  {q:'log₂8 = ?', a:'3', w:['2','4','8']},
-  {q:'log₁₀100 = ?', a:'2', w:['10','1','3']},
-  {q:'ln e = ?', a:'1', w:['0','e','2']},
-  {q:'log₂1 = ?', a:'0', w:['1','2','-1']},
-  {q:'3⁰ = ?', a:'1', w:['0','3','-1']},
-  {q:'log₃27 = ?', a:'3', w:['9','2','27']},
-  {q:'2⁻¹ = ?', a:'0.5', w:['2','-2','-1']},
-  {q:'log₄16 = ?', a:'2', w:['4','3','8']},
-  {q:'(√2)² = ?', a:'2', w:['√2','4','1']},
-  {q:'9^(1/2) = ?', a:'3', w:['4.5','81','9']},
-  {q:'log₂32 = ?', a:'5', w:['4','6','16']},
+  {q:'2³ = ?', a:'8', w:['6','9','12'], cat:'指数对数', diff:1},
+  {q:'log₂8 = ?', a:'3', w:['2','4','8'], cat:'指数对数', diff:1},
+  {q:'log₁₀100 = ?', a:'2', w:['10','1','3'], cat:'指数对数', diff:1},
+  {q:'ln e = ?', a:'1', w:['0','e','2'], cat:'指数对数', diff:1},
+  {q:'log₂1 = ?', a:'0', w:['1','2','-1'], cat:'指数对数', diff:1},
+  {q:'3⁰ = ?', a:'1', w:['0','3','-1'], cat:'指数对数', diff:1},
+  {q:'log₃27 = ?', a:'3', w:['9','2','27'], cat:'指数对数', diff:1},
+  {q:'2⁻¹ = ?', a:'0.5', w:['2','-2','-1'], cat:'指数对数', diff:1},
+  {q:'log₄16 = ?', a:'2', w:['4','3','8'], cat:'指数对数', diff:1},
+  {q:'(√2)² = ?', a:'2', w:['√2','4','1'], cat:'指数对数', diff:1},
+  {q:'9^(1/2) = ?', a:'3', w:['4.5','81','9'], cat:'指数对数', diff:1},
+  {q:'log₂32 = ?', a:'5', w:['4','6','16'], cat:'指数对数', diff:1},
+  {q:'lg2+lg5 = ?', a:'1', w:['lg7','lg10','0'], cat:'指数对数', diff:2},
+  {q:'ln(e²) = ?', a:'2', w:['e²','1','e'], cat:'指数对数', diff:2},
+  {q:'log₂√8 = ?', a:'3/2', w:['2','3','√3'], cat:'指数对数', diff:2},
+  {q:'若2ˣ=16,则x=?', a:'4', w:['8','2','16'], cat:'指数对数', diff:2},
+  {q:'log₉27 = ?', a:'3/2', w:['3','2','9/27'], cat:'指数对数', diff:3},
 
   // ---- 三角函数 ----
-  {q:'sin30° = ?', a:'1/2', w:['√2/2','√3/2','1']},
-  {q:'cos60° = ?', a:'1/2', w:['√3/2','√2/2','0']},
-  {q:'tan45° = ?', a:'1', w:['0','√2','1/2']},
-  {q:'sin90° = ?', a:'1', w:['0','-1','1/2']},
-  {q:'cos0° = ?', a:'1', w:['0','-1','1/2']},
-  {q:'sin0° = ?', a:'0', w:['1','-1','1/2']},
-  {q:'tan0° = ?', a:'0', w:['1','不存在','-1']},
-  {q:'cos90° = ?', a:'0', w:['1','-1','1/2']},
-  {q:'sin²30°+cos²30° = ?', a:'1', w:['0','1/2','3/4']},
-  {q:'sin60° = ?', a:'√3/2', w:['1/2','√2/2','1']},
-  {q:'cos30° = ?', a:'√3/2', w:['1/2','√2/2','1']},
-  {q:'tan60° = ?', a:'√3', w:['1','√2','3']},
-  {q:'sin45° = ?', a:'√2/2', w:['1/2','√3/2','1']},
-  {q:'cos180° = ?', a:'-1', w:['0','1','不存在']},
-  {q:'sin(π/6) = ?', a:'1/2', w:['√3/2','√2/2','0']},
-  {q:'cos(π/3) = ?', a:'1/2', w:['√3/2','0','√2/2']},
-  {q:'2sin30°cos30° = ?', a:'√3/2', w:['1/2','1','√2/2']},
+  {q:'sin30° = ?', a:'1/2', w:['√2/2','√3/2','1'], cat:'三角函数', diff:1},
+  {q:'cos60° = ?', a:'1/2', w:['√3/2','√2/2','0'], cat:'三角函数', diff:1},
+  {q:'tan45° = ?', a:'1', w:['0','√2','1/2'], cat:'三角函数', diff:1},
+  {q:'sin90° = ?', a:'1', w:['0','-1','1/2'], cat:'三角函数', diff:1},
+  {q:'cos0° = ?', a:'1', w:['0','-1','1/2'], cat:'三角函数', diff:1},
+  {q:'sin0° = ?', a:'0', w:['1','-1','1/2'], cat:'三角函数', diff:1},
+  {q:'tan0° = ?', a:'0', w:['1','不存在','-1'], cat:'三角函数', diff:1},
+  {q:'cos90° = ?', a:'0', w:['1','-1','1/2'], cat:'三角函数', diff:1},
+  {q:'sin²30°+cos²30° = ?', a:'1', w:['0','1/2','3/4'], cat:'三角函数', diff:1},
+  {q:'sin60° = ?', a:'√3/2', w:['1/2','√2/2','1'], cat:'三角函数', diff:1},
+  {q:'cos30° = ?', a:'√3/2', w:['1/2','√2/2','1'], cat:'三角函数', diff:1},
+  {q:'tan60° = ?', a:'√3', w:['1','√2','3'], cat:'三角函数', diff:1},
+  {q:'sin45° = ?', a:'√2/2', w:['1/2','√3/2','1'], cat:'三角函数', diff:1},
+  {q:'cos180° = ?', a:'-1', w:['0','1','不存在'], cat:'三角函数', diff:1},
+  {q:'sin(π/6) = ?', a:'1/2', w:['√3/2','√2/2','0'], cat:'三角函数', diff:1},
+  {q:'cos(π/3) = ?', a:'1/2', w:['√3/2','0','√2/2'], cat:'三角函数', diff:1},
+  {q:'2sin30°cos30° = ?', a:'√3/2', w:['1/2','1','√2/2'], cat:'三角函数', diff:2},
+  {q:'sin(π-α) = ?', a:'sinα', w:['-sinα','cosα','-cosα'], cat:'三角函数', diff:2},
+  {q:'cos(π+α) = ?', a:'-cosα', w:['cosα','sinα','-sinα'], cat:'三角函数', diff:2},
+  {q:'y=sinx的最小正周期=?', a:'2π', w:['π','π/2','4π'], cat:'三角函数', diff:2},
+  {q:'y=sin2x的最小正周期=?', a:'π', w:['2π','π/2','4π'], cat:'三角函数', diff:2},
+  {q:'tan90°等于?', a:'不存在', w:['0','1','∞'], cat:'三角函数', diff:2},
+  {q:'sin(α+β)展开=?', a:'sinαcosβ+cosαsinβ', w:['sinαsinβ+cosαcosβ','sinαcosβ-cosαsinβ','cosαcosβ-sinαsinβ'], cat:'三角函数', diff:3},
+  {q:'cos2α = ?（用cos表示）', a:'2cos²α-1', w:['cos²α-1','1-2sin²α+cos²α','cosα'], cat:'三角函数', diff:3},
 
   // ---- 数列 ----
-  {q:'等差数列1,3,5,7,...第10项=?', a:'19', w:['20','21','18']},
-  {q:'等差数列2,5,8,11,...公差d=?', a:'3', w:['2','5','4']},
-  {q:'等比数列2,6,18,...第4项=?', a:'54', w:['36','48','72']},
-  {q:'等比数列1,2,4,8,...公比q=?', a:'2', w:['3','4','1']},
-  {q:'等差数列首项a₁=1,d=2,则S₅=?', a:'25', w:['15','20','30']},
-  {q:'等差数列前n项和公式是？', a:'n(a₁+aₙ)/2', w:['na₁+d','a₁·qⁿ','n²d/2']},
-  {q:'1+2+3+...+100 = ?', a:'5050', w:['5000','5100','4950']},
-  {q:'等比数列3,9,27,...公比是?', a:'3', w:['6','9','2']},
+  {q:'等差数列1,3,5,7,...第10项=?', a:'19', w:['20','21','18'], cat:'数列', diff:1},
+  {q:'等差数列2,5,8,11,...公差d=?', a:'3', w:['2','5','4'], cat:'数列', diff:1},
+  {q:'等比数列2,6,18,...第4项=?', a:'54', w:['36','48','72'], cat:'数列', diff:1},
+  {q:'等比数列1,2,4,8,...公比q=?', a:'2', w:['3','4','1'], cat:'数列', diff:1},
+  {q:'等差数列首项a₁=1,d=2,则S₅=?', a:'25', w:['15','20','30'], cat:'数列', diff:2},
+  {q:'等差数列前n项和公式是？', a:'n(a₁+aₙ)/2', w:['na₁+d','a₁·qⁿ','n²d/2'], cat:'数列', diff:2},
+  {q:'1+2+3+...+100 = ?', a:'5050', w:['5000','5100','4950'], cat:'数列', diff:1},
+  {q:'等比数列3,9,27,...公比是?', a:'3', w:['6','9','2'], cat:'数列', diff:1},
+  {q:'等比数列求和公式(q≠1): Sₙ=?', a:'a₁(1-qⁿ)/(1-q)', w:['na₁','a₁qⁿ','n(a₁+aₙ)/2'], cat:'数列', diff:3},
+  {q:'等差数列a₃=7,a₅=13,则d=?', a:'3', w:['6','2','4'], cat:'数列', diff:2},
+  {q:'等比数列a₁=2,q=3,则a₄=?', a:'54', w:['18','36','162'], cat:'数列', diff:2},
 
   // ---- 不等式 ----
-  {q:'若a>b>0，则1/a与1/b的关系是？', a:'1/a<1/b', w:['1/a>1/b','1/a=1/b','不确定']},
-  {q:'|x-1|<3 的解集是？', a:'(-2,4)', w:['(-3,3)','(1,4)','(-2,2)']},
-  {q:'x²-4>0 的解集是？', a:'x<-2或x>2', w:['x>2','-2<x<2','x<-2']},
-  {q:'若a>0,b>0,a+b=4,则ab最大值=?', a:'4', w:['2','8','16']},
-  {q:'基本不等式: a+b≥?（a,b>0）', a:'2√(ab)', w:['ab','√(a+b)','(a+b)/2']},
+  {q:'若a>b>0，则1/a与1/b的关系是？', a:'1/a<1/b', w:['1/a>1/b','1/a=1/b','不确定'], cat:'不等式', diff:1},
+  {q:'|x-1|<3 的解集是？', a:'(-2,4)', w:['(-3,3)','(1,4)','(-2,2)'], cat:'不等式', diff:2},
+  {q:'x²-4>0 的解集是？', a:'x<-2或x>2', w:['x>2','-2<x<2','x<-2'], cat:'不等式', diff:2},
+  {q:'若a>0,b>0,a+b=4,则ab最大值=?', a:'4', w:['2','8','16'], cat:'不等式', diff:2},
+  {q:'基本不等式: a+b≥?（a,b>0）', a:'2√(ab)', w:['ab','√(a+b)','(a+b)/2'], cat:'不等式', diff:2},
+  {q:'若x>0,则x+1/x的最小值=?', a:'2', w:['1','√2','4'], cat:'不等式', diff:3},
+  {q:'x²+2x-3<0的解集是?', a:'(-3,1)', w:['(-1,3)','(1,3)','(-3,-1)'], cat:'不等式', diff:2},
 
   // ---- 向量 ----
-  {q:'向量a=(1,2),b=(3,4),a+b=?', a:'(4,6)', w:['(3,8)','(4,8)','(2,6)']},
-  {q:'向量a=(1,2),b=(3,4),a·b=?', a:'11', w:['10','7','14']},
-  {q:'向量(3,4)的模|a|=?', a:'5', w:['7','12','25']},
-  {q:'若a⊥b，则a·b=?', a:'0', w:['1','-1','不确定']},
-  {q:'向量a=(2,0)的单位向量是?', a:'(1,0)', w:['(2,0)','(0,1)','(0.5,0)']},
+  {q:'向量a=(1,2),b=(3,4),a+b=?', a:'(4,6)', w:['(3,8)','(4,8)','(2,6)'], cat:'向量', diff:1},
+  {q:'向量a=(1,2),b=(3,4),a·b=?', a:'11', w:['10','7','14'], cat:'向量', diff:1},
+  {q:'向量(3,4)的模|a|=?', a:'5', w:['7','12','25'], cat:'向量', diff:1},
+  {q:'若a⊥b，则a·b=?', a:'0', w:['1','-1','不确定'], cat:'向量', diff:1},
+  {q:'向量a=(2,0)的单位向量是?', a:'(1,0)', w:['(2,0)','(0,1)','(0.5,0)'], cat:'向量', diff:2},
+  {q:'向量a=(1,1),b=(1,-1),a·b=?', a:'0', w:['2','-2','1'], cat:'向量', diff:2},
+  {q:'2a-b=?(a=(1,2),b=(3,4))', a:'(-1,0)', w:['(5,8)','(-1,-2)','(1,0)'], cat:'向量', diff:2},
 
   // ---- 解析几何 ----
-  {q:'过(1,2)和(3,4)的直线斜率k=?', a:'1', w:['2','3','1/2']},
-  {q:'y=2x+1与y轴交点是?', a:'(0,1)', w:['(1,0)','(0,2)','(1,3)']},
-  {q:'圆x²+y²=25的半径是?', a:'5', w:['25','10','√5']},
-  {q:'两点(0,0)和(3,4)间的距离=?', a:'5', w:['7','12','25']},
-  {q:'直线y=x+1的斜率是?', a:'1', w:['0','-1','2']},
-  {q:'过原点斜率为2的直线方程是?', a:'y=2x', w:['y=x+2','y=2x+1','y=-2x']},
-  {q:'x²+y²=1表示什么图形？', a:'单位圆', w:['椭圆','双曲线','抛物线']},
-  {q:'直线2x+3y-6=0的x截距=?', a:'3', w:['2','6','-3']},
+  {q:'过(1,2)和(3,4)的直线斜率k=?', a:'1', w:['2','3','1/2'], cat:'解析几何', diff:1},
+  {q:'y=2x+1与y轴交点是?', a:'(0,1)', w:['(1,0)','(0,2)','(1,3)'], cat:'解析几何', diff:1},
+  {q:'圆x²+y²=25的半径是?', a:'5', w:['25','10','√5'], cat:'解析几何', diff:1},
+  {q:'两点(0,0)和(3,4)间的距离=?', a:'5', w:['7','12','25'], cat:'解析几何', diff:1},
+  {q:'直线y=x+1的斜率是?', a:'1', w:['0','-1','2'], cat:'解析几何', diff:1},
+  {q:'过原点斜率为2的直线方程是?', a:'y=2x', w:['y=x+2','y=2x+1','y=-2x'], cat:'解析几何', diff:1},
+  {q:'x²+y²=1表示什么图形？', a:'单位圆', w:['椭圆','双曲线','抛物线'], cat:'解析几何', diff:1},
+  {q:'直线2x+3y-6=0的x截距=?', a:'3', w:['2','6','-3'], cat:'解析几何', diff:2},
+  {q:'椭圆x²/9+y²/4=1的长半轴a=?', a:'3', w:['9','2','4'], cat:'解析几何', diff:2},
+  {q:'抛物线y²=4x的焦点坐标是?', a:'(1,0)', w:['(0,1)','(4,0)','(2,0)'], cat:'解析几何', diff:3},
+  {q:'双曲线x²/4-y²/9=1的渐近线是?', a:'y=±3x/2', w:['y=±2x/3','y=±x','y=±3x'], cat:'解析几何', diff:3},
+  {q:'点(1,2)到直线x-y+1=0的距离=?', a:'0', w:['1','√2','2'], cat:'解析几何', diff:2},
 
   // ---- 概率统计 ----
-  {q:'抛一枚硬币，正面朝上的概率=?', a:'1/2', w:['1/3','1/4','1']},
-  {q:'掷一个骰子，出6的概率=?', a:'1/6', w:['1/3','1/2','6']},
-  {q:'从{1,2,3,4,5}中随机取一个偶数的概率=?', a:'2/5', w:['1/2','3/5','1/5']},
-  {q:'C(5,2) = ?', a:'10', w:['20','5','25']},
-  {q:'A(4,2) = ?', a:'12', w:['8','6','24']},
-  {q:'5! = ?', a:'120', w:['60','24','720']},
-  {q:'C(6,3) = ?', a:'20', w:['18','15','120']},
-  {q:'P(A∪B) = P(A)+P(B)-?', a:'P(A∩B)', w:['P(A)·P(B)','0','P(A)+P(B)']},
+  {q:'抛一枚硬币，正面朝上的概率=?', a:'1/2', w:['1/3','1/4','1'], cat:'概率', diff:1},
+  {q:'掷一个骰子，出6的概率=?', a:'1/6', w:['1/3','1/2','6'], cat:'概率', diff:1},
+  {q:'从{1,2,3,4,5}中随机取一个偶数的概率=?', a:'2/5', w:['1/2','3/5','1/5'], cat:'概率', diff:1},
+  {q:'C(5,2) = ?', a:'10', w:['20','5','25'], cat:'概率', diff:1},
+  {q:'A(4,2) = ?', a:'12', w:['8','6','24'], cat:'概率', diff:1},
+  {q:'5! = ?', a:'120', w:['60','24','720'], cat:'概率', diff:1},
+  {q:'C(6,3) = ?', a:'20', w:['18','15','120'], cat:'概率', diff:2},
+  {q:'P(A∪B) = P(A)+P(B)-?', a:'P(A∩B)', w:['P(A)·P(B)','0','P(A)+P(B)'], cat:'概率', diff:2},
+  {q:'互斥事件A,B: P(A∪B)=?', a:'P(A)+P(B)', w:['P(A)·P(B)','P(A∩B)','1'], cat:'概率', diff:2},
+  {q:'独立事件A,B: P(A∩B)=?', a:'P(A)·P(B)', w:['P(A)+P(B)','P(A∪B)','0'], cat:'概率', diff:2},
+  {q:'C(10,1) = ?', a:'10', w:['1','9','100'], cat:'概率', diff:1},
+  {q:'从5人中选3人的方案数C(5,3)=?', a:'10', w:['60','15','20'], cat:'概率', diff:2},
 
   // ---- 导数基础 ----
-  {q:'f(x)=x²，f\'(x)=?', a:'2x', w:['x²','x','2']},
-  {q:'f(x)=x³，f\'(x)=?', a:'3x²', w:['x³','x²','3x']},
-  {q:'f(x)=sinx，f\'(x)=?', a:'cosx', w:['-sinx','-cosx','tanx']},
-  {q:'f(x)=eˣ，f\'(x)=?', a:'eˣ', w:['xeˣ⁻¹','1','lnx']},
-  {q:'f(x)=lnx，f\'(x)=?', a:'1/x', w:['x','lnx','eˣ']},
-  {q:'f(x)=cosx，f\'(x)=?', a:'-sinx', w:['sinx','cosx','-cosx']},
-  {q:'常数函数f(x)=5的导数=?', a:'0', w:['5','1','-5']},
-  {q:'f(x)=3x²+2x，f\'(x)=?', a:'6x+2', w:['3x+2','6x','3x²']},
-  {q:'f(x)=x⁴，f\'(x)=?', a:'4x³', w:['x⁴','3x⁴','4x']},
-  {q:'f(x)=√x，f\'(x)=?', a:'1/(2√x)', w:['√x','2√x','1/x']},
+  {q:'f(x)=x²，f\'(x)=?', a:'2x', w:['x²','x','2'], cat:'导数', diff:1},
+  {q:'f(x)=x³，f\'(x)=?', a:'3x²', w:['x³','x²','3x'], cat:'导数', diff:1},
+  {q:'f(x)=sinx，f\'(x)=?', a:'cosx', w:['-sinx','-cosx','tanx'], cat:'导数', diff:1},
+  {q:'f(x)=eˣ，f\'(x)=?', a:'eˣ', w:['xeˣ⁻¹','1','lnx'], cat:'导数', diff:1},
+  {q:'f(x)=lnx，f\'(x)=?', a:'1/x', w:['x','lnx','eˣ'], cat:'导数', diff:1},
+  {q:'f(x)=cosx，f\'(x)=?', a:'-sinx', w:['sinx','cosx','-cosx'], cat:'导数', diff:1},
+  {q:'常数函数f(x)=5的导数=?', a:'0', w:['5','1','-5'], cat:'导数', diff:1},
+  {q:'f(x)=3x²+2x，f\'(x)=?', a:'6x+2', w:['3x+2','6x','3x²'], cat:'导数', diff:2},
+  {q:'f(x)=x⁴，f\'(x)=?', a:'4x³', w:['x⁴','3x⁴','4x'], cat:'导数', diff:2},
+  {q:'f(x)=√x，f\'(x)=?', a:'1/(2√x)', w:['√x','2√x','1/x'], cat:'导数', diff:2},
+  {q:'f(x)=x·eˣ，f\'(x)=?', a:'(1+x)eˣ', w:['xeˣ','eˣ','x²eˣ'], cat:'导数', diff:3},
+  {q:'f(x)=x²在x=3处的导数值=?', a:'6', w:['9','3','12'], cat:'导数', diff:2},
+  {q:'f\'(x₀)表示函数在x₀处的?', a:'切线斜率', w:['函数值','面积','最大值'], cat:'导数', diff:1},
 
   // ---- 立体几何 ----
-  {q:'正方体棱长为a，体积=?', a:'a³', w:['6a²','a²','3a³']},
-  {q:'球的体积公式是?', a:'4πr³/3', w:['πr²','4πr²','2πr³']},
-  {q:'球的表面积公式是?', a:'4πr²', w:['πr²','4πr³/3','2πr²']},
-  {q:'圆柱体积公式是?', a:'πr²h', w:['2πrh','πr²','πrh']},
-  {q:'正方体棱长a=2，对角线长=?', a:'2√3', w:['2√2','4','6']},
+  {q:'正方体棱长为a，体积=?', a:'a³', w:['6a²','a²','3a³'], cat:'立体几何', diff:1},
+  {q:'球的体积公式是?', a:'4πr³/3', w:['πr²','4πr²','2πr³'], cat:'立体几何', diff:1},
+  {q:'球的表面积公式是?', a:'4πr²', w:['πr²','4πr³/3','2πr²'], cat:'立体几何', diff:1},
+  {q:'圆柱体积公式是?', a:'πr²h', w:['2πrh','πr²','πrh'], cat:'立体几何', diff:1},
+  {q:'正方体棱长a=2，对角线长=?', a:'2√3', w:['2√2','4','6'], cat:'立体几何', diff:2},
+  {q:'圆锥体积公式是?', a:'πr²h/3', w:['πr²h','2πrh/3','πrh'], cat:'立体几何', diff:2},
+  {q:'正四面体的面数=?', a:'4', w:['3','6','8'], cat:'立体几何', diff:1},
 
   // ---- 二次函数与方程 ----
-  {q:'x²-5x+6=0的两根之和=?', a:'5', w:['6','-5','11']},
-  {q:'x²-5x+6=0的两根之积=?', a:'6', w:['5','-6','30']},
-  {q:'方程x²+2x+1=0的解是?', a:'x=-1', w:['x=1','x=±1','x=0']},
-  {q:'判别式Δ=b²-4ac<0，方程有？', a:'无实数根', w:['两个相等实根','两个不等实根','一个实根']},
-  {q:'y=x²-4x+3的对称轴是?', a:'x=2', w:['x=4','x=-2','x=3']},
-  {q:'y=(x-1)²+2的顶点坐标是?', a:'(1,2)', w:['(2,1)','(-1,2)','(1,-2)']},
+  {q:'x²-5x+6=0的两根之和=?', a:'5', w:['6','-5','11'], cat:'方程', diff:1},
+  {q:'x²-5x+6=0的两根之积=?', a:'6', w:['5','-6','30'], cat:'方程', diff:1},
+  {q:'方程x²+2x+1=0的解是?', a:'x=-1', w:['x=1','x=±1','x=0'], cat:'方程', diff:1},
+  {q:'判别式Δ=b²-4ac<0，方程有？', a:'无实数根', w:['两个相等实根','两个不等实根','一个实根'], cat:'方程', diff:1},
+  {q:'y=x²-4x+3的对称轴是?', a:'x=2', w:['x=4','x=-2','x=3'], cat:'方程', diff:1},
+  {q:'y=(x-1)²+2的顶点坐标是?', a:'(1,2)', w:['(2,1)','(-1,2)','(1,-2)'], cat:'方程', diff:1},
+  {q:'韦达定理:x₁+x₂=?', a:'-b/a', w:['b/a','c/a','-c/a'], cat:'方程', diff:2},
+  {q:'韦达定理:x₁·x₂=?', a:'c/a', w:['-b/a','b/a','-c/a'], cat:'方程', diff:2},
 
   // ---- 其他高考常考 ----
-  {q:'等比数列求和公式(q≠1): Sₙ=?', a:'a₁(1-qⁿ)/(1-q)', w:['na₁','a₁qⁿ','n(a₁+aₙ)/2']},
-  {q:'sin²α+cos²α = ?', a:'1', w:['0','sinα','2']},
-  {q:'tanα = sinα/?', a:'cosα', w:['sinα','tanα','1']},
-  {q:'(a+b)² = ?', a:'a²+2ab+b²', w:['a²+b²','a²+ab+b²','2a²+2b²']},
-  {q:'(a-b)² = ?', a:'a²-2ab+b²', w:['a²-b²','a²-ab+b²','2a²-2b²']},
-  {q:'a²-b² = ?', a:'(a+b)(a-b)', w:['(a-b)²','a²+b²','(a+b)²']},
-  {q:'i² = ?（i为虚数单位）', a:'-1', w:['1','i','-i']},
-  {q:'复数z=3+4i，|z|=?', a:'5', w:['7','25','3']},
-  {q:'sin(α+β)展开=?', a:'sinαcosβ+cosαsinβ', w:['sinαsinβ+cosαcosβ','sinαcosβ-cosαsinβ','cosαcosβ-sinαsinβ']},
-  {q:'cos2α = ?（用cos表示）', a:'2cos²α-1', w:['cos²α-1','1-2sin²α+cos²α','cosα']},
+  {q:'sin²α+cos²α = ?', a:'1', w:['0','sinα','2'], cat:'三角函数', diff:1},
+  {q:'tanα = sinα/?', a:'cosα', w:['sinα','tanα','1'], cat:'三角函数', diff:1},
+  {q:'(a+b)² = ?', a:'a²+2ab+b²', w:['a²+b²','a²+ab+b²','2a²+2b²'], cat:'方程', diff:1},
+  {q:'(a-b)² = ?', a:'a²-2ab+b²', w:['a²-b²','a²-ab+b²','2a²-2b²'], cat:'方程', diff:1},
+  {q:'a²-b² = ?', a:'(a+b)(a-b)', w:['(a-b)²','a²+b²','(a+b)²'], cat:'方程', diff:1},
+  {q:'i² = ?（i为虚数单位）', a:'-1', w:['1','i','-i'], cat:'复数', diff:1},
+  {q:'复数z=3+4i，|z|=?', a:'5', w:['7','25','3'], cat:'复数', diff:2},
+  {q:'(1+i)² = ?', a:'2i', w:['2','1+2i','2+2i'], cat:'复数', diff:2},
+  {q:'复数z=1+i的共轭复数是?', a:'1-i', w:['-1+i','-1-i','i-1'], cat:'复数', diff:2},
+  {q:'i⁴ = ?', a:'1', w:['i','-1','-i'], cat:'复数', diff:2},
 ];
 
 // Shuffle helper
@@ -751,6 +934,28 @@ class FX {
 }
 
 // ===================================================================
+// LOCAL STORAGE
+// ===================================================================
+function loadBest() {
+  try {
+    const d = JSON.parse(localStorage.getItem('pkmn_math_best') || '{}');
+    return { defeated: d.defeated || 0, streak: d.streak || 0, accuracy: d.accuracy || 0 };
+  } catch(e) { return { defeated: 0, streak: 0, accuracy: 0 }; }
+}
+function saveBest(stats) {
+  try { localStorage.setItem('pkmn_math_best', JSON.stringify(stats)); } catch(e) {}
+}
+function showBestScore() {
+  const b = loadBest();
+  const el = document.getElementById('best-score');
+  if (b.defeated > 0) {
+    el.innerHTML = `最佳记录: 击败<span>${b.defeated}</span> 连击<span>${b.streak}</span> 正确率<span>${b.accuracy}%</span>`;
+  } else {
+    el.textContent = '尚无战绩记录';
+  }
+}
+
+// ===================================================================
 // GAME STATE
 // ===================================================================
 let fx;
@@ -762,12 +967,16 @@ let st = {
   correct:0, wrong:0, defeated:0,
   curSkill:null, busy:false, selectedIdx:-1,
   timerIv:null, qBank:[],
+  topicStats:{}, // { topic: {correct:n, total:n} }
+  statusEffects: { player: [], enemy: [] }, // [{type, icon, turns}]
 };
 
 // ===================================================================
 // SCREENS
 // ===================================================================
 function showSelectScreen(){
+  SFX.init();
+  SFX.play('select');
   document.getElementById('title-screen').style.display='none';
   document.getElementById('select-screen').style.display='flex';
   const g=document.getElementById('pokemon-grid'); g.innerHTML='';
@@ -780,7 +989,8 @@ function showSelectScreen(){
     d.insertAdjacentHTML('beforeend', `<span class="name">${p.name}</span>
       <span class="type-badge" style="background:${TC[p.type]}">${p.type}</span>
       <span class="stats-preview">HP:${p.hp}</span>`);
-    d.onclick=()=>selPoke(i); g.appendChild(d);
+    d.onclick=()=>{ SFX.play('select'); selPoke(i); };
+    g.appendChild(d);
   });
 }
 function selPoke(i){
@@ -791,12 +1001,14 @@ function selPoke(i){
 
 function startBattle(){
   if(st.selectedIdx<0)return;
+  SFX.play('select');
   st.player={...POKEMON[st.selectedIdx]};
   st.pHP=st.player.hp; st.pMaxHP=st.player.hp;
   st.round=1; st.streak=0; st.maxStreak=0;
   st.correct=0; st.wrong=0; st.defeated=0; st.busy=false;
+  st.topicStats={};
+  st.statusEffects={player:[], enemy:[]};
   usedQuestions=new Set();
-  // Shuffle question bank
   st.qBank=shuffle([...Q_BANK]);
 
   document.getElementById('select-screen').style.display='none';
@@ -824,6 +1036,7 @@ function spawnEnemy(){
   const maxHP=Math.floor(80*scale);
   st.enemy={...base, lv, atkPow:base.atk+st.round*2};
   st.eHP=maxHP; st.eMaxHP=maxHP;
+  st.statusEffects.enemy=[];
 
   document.getElementById('enemy-name').textContent=st.enemy.name;
   document.getElementById('enemy-level').textContent=`Lv.${lv}`;
@@ -857,6 +1070,12 @@ function updateUI(){
   else si.style.display='none';
 
   document.getElementById('exp-bar').style.width=(st.defeated/5*100)+'%';
+
+  // Status icons
+  document.getElementById('player-status').innerHTML=
+    st.statusEffects.player.map(s=>`<span class="status-icon">${s.icon}</span>`).join('');
+  document.getElementById('enemy-status').innerHTML=
+    st.statusEffects.enemy.map(s=>`<span class="status-icon">${s.icon}</span>`).join('');
 }
 
 function msg(t){ document.getElementById('message-box').textContent=t; }
@@ -875,40 +1094,73 @@ function renderSkills(){
 }
 
 // ===================================================================
+// DIFFICULTY-BASED QUESTION SELECTION
+// ===================================================================
+function getQuestion(){
+  // Determine target difficulty based on round
+  let maxDiff;
+  if (st.round <= 2) maxDiff = 1;       // easy only
+  else if (st.round <= 3) maxDiff = 2;   // easy + medium
+  else maxDiff = 3;                       // all difficulties
+
+  // Filter questions by difficulty
+  const eligible = [];
+  for (let i = 0; i < st.qBank.length; i++) {
+    if (!usedQuestions.has(i) && (st.qBank[i].diff || 1) <= maxDiff) {
+      eligible.push(i);
+    }
+  }
+
+  // Fallback: if no eligible questions, allow any unused
+  if (eligible.length === 0) {
+    for (let i = 0; i < st.qBank.length; i++) {
+      if (!usedQuestions.has(i)) eligible.push(i);
+    }
+  }
+
+  // If all used, reshuffle
+  if (eligible.length === 0) {
+    usedQuestions.clear();
+    st.qBank = shuffle([...Q_BANK]);
+    usedQuestions.add(0);
+    return st.qBank[0];
+  }
+
+  // Pick random from eligible (weighted toward harder when available)
+  const idx = eligible[randInt(0, eligible.length - 1)];
+  usedQuestions.add(idx);
+  return st.qBank[idx];
+}
+
+// ===================================================================
 // BATTLE FLOW
 // ===================================================================
 function useSkill(idx){
   if(st.busy)return;
+  SFX.play('select');
   st.curSkill=st.player.skills[idx];
   msg(`${st.player.name}使用${st.curSkill.name}！答对才能命中！`);
   showQuestion();
-}
-
-function getQuestion(){
-  // Get next unused question from shuffled bank
-  for(let i=0;i<st.qBank.length;i++){
-    if(!usedQuestions.has(i)){
-      usedQuestions.add(i);
-      return st.qBank[i];
-    }
-  }
-  // All used, reshuffle
-  usedQuestions.clear();
-  st.qBank=shuffle([...Q_BANK]);
-  usedQuestions.add(0);
-  return st.qBank[0];
 }
 
 function showQuestion(){
   st.busy=true;
   const q=getQuestion();
   const opts=shuffle([q.a,...q.w]);
-  st.curQ={text:q.q, answer:q.a, options:opts};
+  st.curQ={text:q.q, answer:q.a, options:opts, cat:q.cat||'其他', diff:q.diff||1};
 
   document.getElementById('skill-panel').style.display='none';
   const panel=document.getElementById('question-panel');
   panel.style.display='flex';
   document.getElementById('question-text').textContent=q.q;
+  document.getElementById('explain-box').style.display='none';
+
+  // Show category and difficulty
+  const catEl=document.getElementById('question-category');
+  catEl.textContent=st.curQ.cat;
+  const diffEl=document.getElementById('question-diff');
+  const stars='★'.repeat(st.curQ.diff)+'☆'.repeat(3-st.curQ.diff);
+  diffEl.textContent=stars;
 
   const grid=document.getElementById('answer-grid'); grid.innerHTML='';
   opts.forEach(opt=>{
@@ -921,16 +1173,17 @@ function showQuestion(){
 }
 
 function startTimer(){
-  const dur=20;
+  // Timer duration scales with difficulty
+  const baseDur = st.curQ.diff === 3 ? 25 : st.curQ.diff === 2 ? 20 : 15;
   const bar=document.getElementById('timer-bar');
   const con=document.getElementById('timer-container');
   con.style.display='block'; bar.style.width='100%';
   clearInterval(st.timerIv);
   const t0=Date.now();
   st.timerIv=setInterval(()=>{
-    const rem=Math.max(0,dur-(Date.now()-t0)/1000);
-    bar.style.width=(rem/dur*100)+'%';
-    bar.style.backgroundColor=rem>dur*0.3?'#6366f1':'#ef4444';
+    const rem=Math.max(0,baseDur-(Date.now()-t0)/1000);
+    bar.style.width=(rem/baseDur*100)+'%';
+    bar.style.backgroundColor=rem>baseDur*0.3?'#6366f1':'#ef4444';
     if(rem<=0){clearInterval(st.timerIv);onWrong();}
   },50);
 }
@@ -944,15 +1197,26 @@ function submitAnswer(chosen,btn){
     if(b.textContent===st.curQ.answer)b.classList.add('correct');
     else if(b===btn&&chosen!==st.curQ.answer)b.classList.add('wrong');
   });
-  chosen===st.curQ.answer ? onCorrect() : onWrong();
+
+  // Track topic stats
+  const topic=st.curQ.cat;
+  if(!st.topicStats[topic]) st.topicStats[topic]={correct:0,total:0};
+  st.topicStats[topic].total++;
+
+  if(chosen===st.curQ.answer) {
+    st.topicStats[topic].correct++;
+    onCorrect();
+  } else {
+    onWrong(chosen !== undefined);
+  }
 }
 
 async function onCorrect(){
   st.correct++; st.streak++;
   if(st.streak>st.maxStreak)st.maxStreak=st.streak;
+  SFX.play('correct');
 
   const sk=st.curSkill;
-  // Check accuracy
   const hit=Math.random()*100<sk.acc;
   if(!hit){
     msg(`${st.player.name}的${sk.name}没有命中！`);
@@ -963,31 +1227,59 @@ async function onCorrect(){
     endTurn(); return;
   }
 
-  // Streak bonus
-  const streakBonus=st.streak>=3?1.3:st.streak>=5?1.5:1;
-  let dmg=Math.floor(sk.power*streakBonus);
-  const isCrit=Math.random()<0.15;
-  if(isCrit)dmg=Math.floor(dmg*1.5);
+  // Streak bonus (fixed: check >=5 first)
+  let streakBonus = 1;
+  if(st.streak>=5) streakBonus=1.5;
+  else if(st.streak>=3) streakBonus=1.3;
 
-  const bonusText=st.streak>=3?` 连击x${st.streak}！`:'';
-  const critText=isCrit?' 暴击！':'';
-  msg(`答对了！${sk.name}命中！${critText}${bonusText}`);
+  // Difficulty bonus
+  const diffBonus = 1 + (st.curQ.diff - 1) * 0.15;
+
+  // Type effectiveness
+  const typeMultiplier = getTypeMultiplier(sk.type, st.enemy.type);
+
+  let dmg=Math.floor(sk.power * streakBonus * diffBonus * typeMultiplier);
+  const isCrit=Math.random()<0.15;
+  if(isCrit) dmg=Math.floor(dmg*1.5);
+
+  // Status effect bonus
+  const atkBuff = st.statusEffects.player.find(s=>s.type==='atk_up');
+  if(atkBuff) dmg=Math.floor(dmg*1.3);
+  const defDebuff = st.statusEffects.enemy.find(s=>s.type==='def_down');
+  if(defDebuff) dmg=Math.floor(dmg*1.2);
+
+  let texts = [];
+  if(isCrit) texts.push('暴击！');
+  if(st.streak>=3) texts.push(`连击x${st.streak}！`);
+  if(typeMultiplier>1) texts.push('效果拔群！');
+  else if(typeMultiplier<1 && typeMultiplier>0) texts.push('效果一般...');
+  else if(typeMultiplier===0) texts.push('没有效果！');
+
+  msg(`答对了！${sk.name}命中！${texts.join(' ')}`);
 
   await sleep(350);
   fx.resize();
 
-  // Power >= 60: charge animation
   if(sk.power>=60){
     const pe=document.getElementById('player-sprite');
     const pr=pe.getBoundingClientRect();
     const br=document.getElementById('battle-bg').getBoundingClientRect();
     pe.classList.add('charge-anim');
+    SFX.play('charge');
     fx.charge(pr.left-br.left+pr.width/2, pr.top-br.top+pr.height/2);
     await sleep(550);
     pe.classList.remove('charge-anim');
   }
 
+  if(typeMultiplier===0){
+    // No effect, no attack animation
+    showMiss('enemy');
+    await sleep(700);
+    endTurn(); return;
+  }
+
   await playAtk(true);
+  SFX.play(isCrit?'crit':'hit');
 
   // FX at enemy
   const ee=document.getElementById('enemy-sprite');
@@ -996,12 +1288,17 @@ async function onCorrect(){
   const ex=er.left-br2.left+er.width/2, ey=er.top-br2.top+er.height/2;
 
   fx.typeFX(sk.type,ex,ey);
+  if(typeMultiplier>1) fx.burst(ex,ey,20,['#fbbf24','#fff'],{sp:5,sz:5});
   if(sk.power>=50) screenFlash(TC[sk.type]||'#fff');
   if(sk.power>=60){ fx.beam(br2.width*0.25,br2.height*0.7,ex,ey,
     [TC[sk.type]||'#fff','#fff'],20); }
 
+  // Show effectiveness text
+  if(typeMultiplier>1) showEffText('enemy','效果拔群！','super');
+  else if(typeMultiplier<1) showEffText('enemy','效果一般...','resist');
+
   st.eHP=Math.max(0,st.eHP-dmg);
-  showDmg('enemy',dmg,false,isCrit);
+  showDmg('enemy',dmg,false,isCrit,typeMultiplier>1?'super':typeMultiplier<1?'resist':'');
   updateUI();
 
   // Heal skill
@@ -1015,27 +1312,59 @@ async function onCorrect(){
     updateUI();
   }
 
+  // Status effects from streak
+  if(st.streak===3 && !st.statusEffects.player.find(s=>s.type==='atk_up')){
+    st.statusEffects.player.push({type:'atk_up',icon:'⚔️',turns:3});
+    updateUI();
+  }
+  if(st.streak===5 && !st.statusEffects.enemy.find(s=>s.type==='def_down')){
+    st.statusEffects.enemy.push({type:'def_down',icon:'🔻',turns:3});
+    updateUI();
+  }
+
   if(st.eHP<=0){ await sleep(400); await enemyDefeated(); return; }
   await sleep(500);
   endTurn();
 }
 
-async function onWrong(){
+async function onWrong(showExplain=false){
   st.wrong++; st.streak=0;
-  msg(`答错了！${st.enemy.name}发动攻击！`);
+  SFX.play('wrong');
   updateUI();
+
+  // Show correct answer explanation
+  if(showExplain && st.curQ) {
+    const explainEl = document.getElementById('explain-box');
+    explainEl.style.display = 'block';
+    explainEl.textContent = `正确答案: ${st.curQ.answer}`;
+    await sleep(1200);
+    explainEl.style.display = 'none';
+  }
+
+  msg(`答错了！${st.enemy.name}发动攻击！`);
 
   await sleep(400);
   await playAtk(false);
+  SFX.play('hit');
 
   fx.resize();
   const pe=document.getElementById('player-sprite');
   const pr=pe.getBoundingClientRect();
   const br=document.getElementById('battle-bg').getBoundingClientRect();
   const px=pr.left-br.left+pr.width/2, py=pr.top-br.top+pr.height/2;
-  fx.typeFX(st.enemy.type,px,py);
 
-  const dmg=st.enemy.atkPow+randInt(0,5);
+  // Enemy type effectiveness against player
+  const enemyTypeMulti = getTypeMultiplier(st.enemy.type, st.player.type);
+  fx.typeFX(st.enemy.type,px,py);
+  if(enemyTypeMulti>1) showEffText('player','效果拔群！','super');
+
+  let dmg=st.enemy.atkPow+randInt(0,5);
+  dmg = Math.floor(dmg * enemyTypeMulti);
+
+  // Player defense buff
+  const defBuff = st.statusEffects.player.find(s=>s.type==='def_up');
+  if(defBuff) dmg=Math.floor(dmg*0.7);
+
   st.pHP=Math.max(0,st.pHP-dmg);
   showDmg('player',dmg);
   updateUI();
@@ -1047,10 +1376,10 @@ async function onWrong(){
 
 async function enemyDefeated(){
   st.defeated++; st.round++;
+  SFX.play('defeat');
   const el=document.getElementById('enemy-sprite');
   el.classList.add('faint-anim');
 
-  // Burst FX at enemy position
   fx.resize();
   const er=el.getBoundingClientRect();
   const br=document.getElementById('battle-bg').getBoundingClientRect();
@@ -1065,6 +1394,11 @@ async function enemyDefeated(){
   const heal=Math.floor(st.pMaxHP*0.2);
   st.pHP=Math.min(st.pMaxHP,st.pHP+heal);
 
+  // Grant defense buff on enemy defeat
+  if(!st.statusEffects.player.find(s=>s.type==='def_up')){
+    st.statusEffects.player.push({type:'def_up',icon:'🛡️',turns:2});
+  }
+
   el.classList.remove('faint-anim');
   el.style.opacity='1'; el.style.transform='';
   spawnEnemy();
@@ -1078,6 +1412,16 @@ function endTurn(){
   st.busy=false;
   document.getElementById('question-panel').style.display='none';
   document.getElementById('skill-panel').style.display='grid';
+  document.getElementById('explain-box').style.display='none';
+
+  // Tick status effects
+  ['player','enemy'].forEach(side=>{
+    st.statusEffects[side] = st.statusEffects[side].filter(s=>{
+      s.turns--;
+      return s.turns > 0;
+    });
+  });
+
   msg('选择技能！');
   updateUI();
 }
@@ -1109,10 +1453,14 @@ async function playAtk(isPlayer){
   });
 }
 
-function showDmg(target,amount,isHeal=false,isCrit=false){
+function showDmg(target,amount,isHeal=false,isCrit=false,effClass=''){
   const c=document.getElementById('battle-bg');
   const el=document.createElement('div');
-  el.className='damage-num'+(isHeal?' heal':'')+(isCrit?' crit':'');
+  let cls='damage-num';
+  if(isHeal) cls+=' heal';
+  else if(isCrit) cls+=' crit';
+  else if(effClass) cls+=' '+effClass;
+  el.className=cls;
   el.textContent=(isHeal?'+':'-')+amount;
   if(target==='enemy'){el.style.right='45px';el.style.top='25px';}
   else{el.style.left='45px';el.style.bottom='75px';}
@@ -1129,6 +1477,17 @@ function showMiss(target){
   else{el.style.left='55px';el.style.bottom='85px';}
   c.appendChild(el);
   setTimeout(()=>el.remove(),1100);
+}
+
+function showEffText(target, text, cls){
+  const c=document.getElementById('battle-bg');
+  const el=document.createElement('div');
+  el.className='effectiveness-text '+cls;
+  el.textContent=text;
+  if(target==='enemy'){el.style.right='30px';el.style.top='50px';}
+  else{el.style.left='30px';el.style.bottom='100px';}
+  c.appendChild(el);
+  setTimeout(()=>el.remove(),1500);
 }
 
 function screenFlash(color){
@@ -1148,11 +1507,44 @@ function showResult(win){
   document.getElementById('result-emoji').textContent=win?'🏆':'💀';
   document.getElementById('result-title').textContent=win?'胜利！':'战斗结束...';
   const tot=st.correct+st.wrong;
+  const accuracy=tot>0?Math.round(st.correct/tot*100):0;
   document.getElementById('stat-correct').textContent=st.correct;
   document.getElementById('stat-wrong').textContent=st.wrong;
-  document.getElementById('stat-accuracy').textContent=tot>0?Math.round(st.correct/tot*100)+'%':'0%';
+  document.getElementById('stat-accuracy').textContent=accuracy+'%';
   document.getElementById('stat-streak').textContent=st.maxStreak;
   document.getElementById('stat-defeated').textContent=st.defeated;
+
+  // Topic breakdown
+  const topicDiv=document.getElementById('topic-stats');
+  topicDiv.innerHTML='';
+  const topics=Object.keys(st.topicStats).sort();
+  topics.forEach(t=>{
+    const ts=st.topicStats[t];
+    const pct=ts.total>0?Math.round(ts.correct/ts.total*100):0;
+    const row=document.createElement('div');
+    row.className='topic-row';
+    row.innerHTML=`<span>${t}</span><div class="topic-bar"><div class="topic-bar-fill" style="width:${pct}%;background:${pct>=70?'#22c55e':pct>=40?'#eab308':'#ef4444'}"></div></div><span>${ts.correct}/${ts.total}</span>`;
+    topicDiv.appendChild(row);
+  });
+
+  // Check & save best
+  const best=loadBest();
+  let isNewRecord=false;
+  if(st.defeated>best.defeated || (st.defeated===best.defeated && accuracy>best.accuracy)){
+    isNewRecord=true;
+    saveBest({defeated:st.defeated, streak:st.maxStreak, accuracy});
+  } else if(st.maxStreak>best.streak){
+    best.streak=st.maxStreak;
+    saveBest(best);
+  }
+
+  const nrEl=document.getElementById('new-record');
+  if(isNewRecord){
+    nrEl.style.display='block';
+    nrEl.textContent='🎉 新纪录！';
+  } else {
+    nrEl.style.display='none';
+  }
 }
 
 function restartGame(){
@@ -1162,17 +1554,19 @@ function restartGame(){
   document.getElementById('title-screen').style.display='flex';
   st.selectedIdx=-1;
   if(fx)fx.clear();
+  showBestScore();
 }
 
 // ===================================================================
-// PRELOAD TITLE SPRITES WITH FALLBACK
+// INIT
 // ===================================================================
-(function initSprites(){
+(function init(){
   document.querySelectorAll('#title-sprites img').forEach(img => {
     const id = img.dataset.id;
     img.src = spr(id);
     imgFallback(img, sprFallback(id));
   });
+  showBestScore();
 })();
 </script>
 </body>
