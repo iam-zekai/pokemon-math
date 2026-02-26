@@ -43,27 +43,27 @@ export const POKEMON = [
     ]
   },
   {
-    name: '耿鬼', id: 94, type: 'ghost', hp: 95, skills: [
-      { name: '舌舔', type: 'ghost', power: 15, acc: 100 },          // 原作30/100
-      { name: '暗影球', type: 'ghost', power: 40, acc: 100 },        // 原作80/100
+    name: '耿鬼', id: 94, type: 'ghost', hp: 105, skills: [
+      { name: '影子球', type: 'ghost', power: 25, acc: 100 },        // 原作30/100
+      { name: '暗影球', type: 'ghost', power: 45, acc: 100 },        // 原作80/100
       { name: '污泥炸弹', type: 'poison', power: 50, acc: 100 },     // 原作90/100
-      { name: '灭亡之歌', type: 'ghost', power: 70, acc: 70 },       // 原作特殊技/—
+      { name: '灭亡之歌', type: 'ghost', power: 70, acc: 85 },       // 原作特殊技/—
     ]
   },
   {
-    name: '卡比兽', id: 143, type: 'normal', hp: 180, skills: [
+    name: '卡比兽', id: 143, type: 'normal', hp: 155, skills: [
       { name: '撞击', type: 'normal', power: 20, acc: 100 },         // 原作40/100
       { name: '泰山压顶', type: 'normal', power: 43, acc: 100 },     // 原作85/100
-      { name: '睡觉', type: 'psychic', power: 0, acc: 100, heal: true, healFlat: 80 }, // 原作回满/睡2回合
-      { name: '破坏光线', type: 'normal', power: 75, acc: 90 },      // 原作150/90 需休息
+      { name: '睡觉', type: 'psychic', power: 0, acc: 100, heal: true, healFlat: 50 }, // 原作回满/睡2回合
+      { name: '破坏光线', type: 'normal', power: 65, acc: 90 },      // 原作150/90 需休息
     ]
   },
   {
-    name: '路卡利欧', id: 448, type: 'fighting', hp: 105, skills: [
+    name: '路卡利欧', id: 448, type: 'fighting', hp: 110, skills: [
       { name: '真空波', type: 'fighting', power: 20, acc: 100 },     // 原作40/100 先制
-      { name: '波导弹', type: 'fighting', power: 40, acc: 100 },     // 原作80/必中
-      { name: '金属爪', type: 'steel', power: 25, acc: 95 },         // 原作50/95
-      { name: '近身战', type: 'fighting', power: 60, acc: 100 },     // 原作120/100 降双防
+      { name: '波导弹', type: 'fighting', power: 45, acc: 100 },     // 原作80/必中
+      { name: '金属爪', type: 'steel', power: 28, acc: 95 },         // 原作50/95
+      { name: '近身战', type: 'fighting', power: 65, acc: 100 },     // 原作120/100 降双防
     ]
   },
   {

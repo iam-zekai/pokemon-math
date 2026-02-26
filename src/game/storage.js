@@ -28,6 +28,7 @@ export const ACHIEVEMENT_DEFS = [
   { id: 'first_badge', name: '初出茅庐', desc: '获得第一个道馆徽章', icon: '🔰' },
   { id: 'four_badges', name: '半程冠军', desc: '获得4个道馆徽章', icon: '🎖️' },
   { id: 'all_badges', name: '数学冠军', desc: '获得全部8个道馆徽章', icon: '👑' },
+  { id: 'challenge_win', name: '挑战成功', desc: '在突发挑战事件中答对', icon: '❓' },
 ]
 
 export function loadAchievements() {

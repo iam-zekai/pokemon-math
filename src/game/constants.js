@@ -21,6 +21,7 @@ export const TYPE_COLORS = {
   normal: '#9ca3af', ghost: '#8b5cf6', flying: '#93c5fd', bug: '#84cc16',
   psychic: '#ec4899', poison: '#a855f7', rock: '#78716c', fighting: '#b45309',
   ice: '#67e8f9', dragon: '#7c3aed', dark: '#44403c', fairy: '#f9a8d4',
+  steel: '#94a3b8',
 }
 
 // Type icons
@@ -29,6 +30,7 @@ export const TYPE_ICONS = {
   normal: '💥', ghost: '👻', flying: '🌪️', bug: '🐛',
   psychic: '🔮', poison: '☠️', rock: '🪨', fighting: '👊',
   ice: '❄️', dragon: '🐲', dark: '🌑', fairy: '✨',
+  steel: '🔩',
 }
 
 // Type effectiveness chart (attacker -> defender -> multiplier)
@@ -49,6 +51,7 @@ export const TYPE_EFF = {
   rock: { fire: 2, ice: 2, flying: 2, bug: 2, fighting: 0.5 },
   bug: { grass: 2, psychic: 2, dark: 2, fire: 0.5, flying: 0.5, ghost: 0.5, fairy: 0.5 },
   fairy: { fighting: 2, dragon: 2, dark: 2, fire: 0.5, poison: 0.5 },
+  steel: { rock: 2, ice: 2, fairy: 2, fire: 0.5, water: 0.5, electric: 0.5, steel: 0.5 },
 }
 
 export function getTypeMultiplier(atkType, defType) {

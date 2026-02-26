@@ -12,7 +12,7 @@ import { shuffle, randInt, sleep } from './utils.js'
 const DIFFICULTY = {
   easy: { timerMult: 1.5, enemyScale: 0.7, maxDiffQ: 2, label: '简单', goalEnemies: 5 },
   normal: { timerMult: 1.0, enemyScale: 1.0, maxDiffQ: 3, label: '普通', goalEnemies: 5 },
-  hard: { timerMult: 0.7, enemyScale: 1.4, maxDiffQ: 3, label: '困难', goalEnemies: 7 },
+  hard: { timerMult: 0.6, enemyScale: 1.5, maxDiffQ: 3, label: '困难', goalEnemies: 10 },
 }
 
 let fx
@@ -31,7 +31,6 @@ let st = {
   statusEffects: { player: [], enemy: [] },
   difficulty: 'normal',
   goalEnemies: 5,
-  paused: false,
   // Gym mode
   mode: 'quick', // 'quick' | 'gym'
   gymId: null,
@@ -122,18 +121,23 @@ function showDialogue(speaker, avatar, lines, callback) {
   $('dialogue-avatar').textContent = avatar
   let idx = 0
 
+  function finish() {
+    overlay.style.display = 'none'
+    overlay.onclick = null
+    const skipBtn = $('dialogue-skip')
+    if (skipBtn) skipBtn.onclick = null
+    callback()
+  }
+
   function showLine() {
-    if (idx >= lines.length) {
-      overlay.style.display = 'none'
-      overlay.onclick = null
-      callback()
-      return
-    }
+    if (idx >= lines.length) { finish(); return }
     $('dialogue-text').textContent = lines[idx]
     idx++
   }
 
   overlay.onclick = () => { SFX.play('select'); showLine() }
+  const skipBtn = $('dialogue-skip')
+  if (skipBtn) skipBtn.onclick = (e) => { e.stopPropagation(); SFX.play('select'); finish() }
   showLine()
 }
 
@@ -148,15 +152,23 @@ function showEventPopup(event) {
     $('event-name').textContent = event.name
     $('event-desc').textContent = event.desc
 
-    const btn = $('event-btn')
-    btn.textContent = event.isChallenge ? '接受挑战！' : '好的！'
-    btn.onclick = () => {
+    function dismiss() {
       SFX.play('select')
       overlay.style.display = 'none'
+      document.removeEventListener('keydown', onKey)
       if (event.effect) event.effect(st)
       updateUI()
       resolve(event)
     }
+
+    function onKey(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dismiss() }
+    }
+
+    const btn = $('event-btn')
+    btn.textContent = event.isChallenge ? '接受挑战！' : '好的！'
+    btn.onclick = dismiss
+    document.addEventListener('keydown', onKey)
   })
 }
 
@@ -320,7 +332,7 @@ export function showGymMap() {
         <div class="gym-topics">${gym.topics.join(' / ')}</div>
         <div class="gym-leader">馆主: ${gym.leader.name}</div>
       </div>
-      <div class="gym-status">${isCleared ? '已通关' : isUnlocked ? '挑战' : '🔒'}</div>
+      <div class="gym-status">${isCleared ? '✅ 再次挑战' : isUnlocked ? '⚔️ 挑战' : '🔒'}</div>
     `
 
     if (isUnlocked && !isCleared) {
@@ -410,6 +422,9 @@ export function startBattle() {
   st.statusEffects = { player: [], enemy: [] }
   st._nextEnemyBuff = null
   st._nextEnemyReward = null
+  st._nextGuaranteedHit = false
+  st._nextDoubleDmg = false
+  st._isChampion = false
   usedQuestions = new Set()
 
   if (st.mode === 'gym') {
@@ -510,6 +525,7 @@ function spawnEnemy() {
 
   $('enemy-name').textContent = st.enemy.name
   $('enemy-level').textContent = `Lv.${st.enemy.lv}`
+  updateEnemyType()
   const eSprite = $('enemy-sprite')
   eSprite.src = spr(st.enemy.id)
   imgFallback(eSprite, sprFallback(st.enemy.id))
@@ -517,6 +533,14 @@ function spawnEnemy() {
   setTimeout(() => eSprite.classList.remove('enter-anim'), 400)
   $('level-indicator').textContent = st.mode === 'gym' ? `训练师 ${st.gymStep + 1}/${st.gymData.trainers}` : `ROUND ${st.round}`
   $('player-level').textContent = `Lv.${5 + st.defeated * 3}`
+}
+
+function updateEnemyType() {
+  const el = $('enemy-type')
+  if (el && st.enemy) {
+    el.textContent = TYPE_ICONS[st.enemy.type] || st.enemy.type
+    el.style.background = TYPE_COLORS[st.enemy.type] || '#6b7280'
+  }
 }
 
 function spawnGymLeader() {
@@ -535,6 +559,7 @@ function spawnGymLeader() {
 
   $('enemy-name').textContent = `${leader.name}的${pk.name}`
   $('enemy-level').textContent = `Lv.${pk.lv}`
+  updateEnemyType()
   const eSprite = $('enemy-sprite')
   eSprite.src = spr(pk.id)
   imgFallback(eSprite, sprFallback(pk.id))
@@ -621,8 +646,9 @@ function getQuestion() {
   if (eligible.length === 0) {
     usedQuestions.clear()
     if (st.mode === 'gym') {
-      const gymQ = Q_BANK.filter(q => st.gymData.topics.includes(q.cat))
-      st.qBank = shuffle([...gymQ, ...gymQ])
+      const gymQ = Q_BANK.filter(q => st.gymData.topics.includes(q.cat) && (q.diff || 1) <= st.gymData.maxDiff)
+      const extra = Q_BANK.filter(q => !st.gymData.topics.includes(q.cat) && (q.diff || 1) <= st.gymData.maxDiff)
+      st.qBank = shuffle([...gymQ, ...gymQ, ...extra.slice(0, 10)])
     } else {
       st.qBank = shuffle([...Q_BANK])
     }
@@ -695,7 +721,7 @@ function startTimer() {
       bar.style.backgroundColor = '#6366f1'
       bar.classList.remove('timer-pulse')
     }
-    if (rem <= 0) { clearInterval(st.timerIv); onWrong() }
+    if (rem <= 0) { clearInterval(st.timerIv); onWrong(true) }
   }, 50)
 }
 
@@ -736,7 +762,9 @@ async function onCorrect() {
   if (st.streak >= 10) tryAchievement('streak_10')
 
   const sk = st.curSkill
-  const hit = Math.random() * 100 < sk.acc
+  const guaranteedHit = st._nextGuaranteedHit
+  if (guaranteedHit) st._nextGuaranteedHit = false
+  const hit = guaranteedHit || Math.random() * 100 < sk.acc
   if (!hit) {
     msg(`${st.player.name}的${sk.name}没有命中！`)
     await sleep(400)
@@ -747,8 +775,8 @@ async function onCorrect() {
   }
 
   let streakBonus = 1
-  if (st.streak >= 5) streakBonus = 1.5
-  else if (st.streak >= 3) streakBonus = 1.3
+  if (st.streak >= 5) streakBonus = 1.3
+  else if (st.streak >= 3) streakBonus = 1.15
 
   const diffBonus = 1 + (st.curQ.diff - 1) * 0.15
   const typeMultiplier = getTypeMultiplier(sk.type, st.enemy.type)
@@ -773,6 +801,9 @@ async function onCorrect() {
 
   const isCrit = Math.random() < 0.15
   if (isCrit) dmg = Math.floor(dmg * 1.5)
+
+  // Double damage event buff
+  if (st._nextDoubleDmg) { dmg = Math.floor(dmg * 2); st._nextDoubleDmg = false }
 
   const atkBuff = st.statusEffects.player.find(s => s.type === 'atk_up')
   if (atkBuff) dmg = Math.floor(dmg * 1.3)
@@ -860,6 +891,10 @@ async function onWrong(showExplain = false) {
   SFX.play('wrong')
   updateUI()
 
+  // Mentor buff: always show explanation
+  const hasMentor = st.statusEffects.player.find(s => s.type === 'mentor')
+  if (hasMentor) showExplain = true
+
   if (showExplain && st.curQ) {
     const explainEl = $('explain-box')
     explainEl.style.display = 'block'
@@ -907,7 +942,8 @@ async function onWrong(showExplain = false) {
 }
 
 async function enemyDefeated() {
-  st.defeated++; st.round++; st.gymStep++
+  st.defeated++; st.round++
+  if (st.mode === 'gym') st.gymStep++
   SFX.play('defeat')
   const el = $('enemy-sprite')
   el.classList.add('faint-anim')
@@ -953,13 +989,10 @@ async function enemyDefeated() {
   el.style.opacity = '1'; el.style.transform = ''
   await handleRandomEvent()
 
-  // Heal between rounds
-  const heal = Math.floor(st.pMaxHP * 0.2)
+  // Heal between rounds (less before gym leader)
+  const healRate = (st.mode === 'gym' && st.gymStep >= st.gymData.trainers) ? 0.08 : 0.15
+  const heal = Math.floor(st.pMaxHP * healRate)
   st.pHP = Math.min(st.pMaxHP, st.pHP + heal)
-
-  if (!st.statusEffects.player.find(s => s.type === 'def_up')) {
-    st.statusEffects.player.push({ type: 'def_up', icon: '🛡️', turns: 2 })
-  }
 
   spawnEnemy()
   updateUI()
@@ -988,9 +1021,21 @@ async function gymLeaderDefeated() {
   if (gymProg.badges.length >= 4) tryAchievement('four_badges')
   if (gymProg.badges.length >= 8) tryAchievement('all_badges')
 
-  // Show post-defeat dialogue
+  // Show post-defeat dialogue, then result (with champion message if all badges)
   showDialogue(leader.name, leader.avatar, leader.postDefeat, () => {
-    showResult(true)
+    if (gymProg.badges.length >= 8) {
+      showDialogue('大木博士', '🔮', [
+        '恭喜你！你已经征服了所有道馆！',
+        '集合、函数、三角、数列、向量、概率、导数...',
+        '你已经掌握了高中数学的全部精髓！',
+        '你是当之无愧的——数学冠军！！',
+      ], () => {
+        st._isChampion = true
+        showResult(true)
+      })
+    } else {
+      showResult(true)
+    }
   })
 }
 
@@ -1060,9 +1105,18 @@ function showResult(win) {
   // Badge earned display for gym mode
   const badgeEl = $('badge-earned')
   if (st.mode === 'gym' && win && st.gymData) {
-    badgeEl.style.display = 'block'
-    badgeEl.innerHTML = `<span class="badge-icon">${st.gymData.leader.badge}</span>获得${st.gymData.leader.badgeName}！`
-    $('result-title').textContent = `${st.gymData.name}通关！`
+    if (st._isChampion) {
+      badgeEl.style.display = 'block'
+      const allBadges = GYMS.map(g => g.leader.badge).join(' ')
+      badgeEl.innerHTML = `<div class="champion-banner"><div class="champion-title">🏆 数学冠军 🏆</div><div class="champion-badges">${allBadges}</div></div>`
+      $('result-title').textContent = '全道馆制霸！'
+      $('result-emoji').textContent = '👑'
+      st._isChampion = false
+    } else {
+      badgeEl.style.display = 'block'
+      badgeEl.innerHTML = `<span class="badge-icon">${st.gymData.leader.badge}</span>获得${st.gymData.leader.badgeName}！`
+      $('result-title').textContent = `${st.gymData.name}通关！`
+    }
   } else {
     badgeEl.style.display = 'none'
     $('result-title').textContent = win ? '胜利！' : '战斗结束...'
@@ -1165,7 +1219,6 @@ export function restartGame() {
 // ===================================================================
 export function initKeyboard() {
   document.addEventListener('keydown', (e) => {
-    if (st.paused) return
     // Answer keys 1-4
     if (['1', '2', '3', '4'].includes(e.key)) {
       const btns = document.querySelectorAll('.answer-btn')

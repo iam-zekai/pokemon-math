@@ -1,6 +1,6 @@
 // Gym definitions - 8 gyms mapped to math topics
 // Each gym: 3 trainers + 1 leader boss fight
-import { spr, sprFallback } from './constants.js'
+// Gym definitions - no external imports needed
 
 export const GYMS = [
   {
@@ -113,7 +113,7 @@ export const GYMS = [
     leader: {
       name: '三角女王 娜姿',
       avatar: '✨',
-      pokemon: { name: '沙奈朵', id: 282, type: 'fairy', lv: 30, hp: 180, atkPow: 28 },
+      pokemon: { name: '沙奈朵', id: 282, type: 'fairy', lv: 30, hp: 210, atkPow: 28 },
       skills: [
         { name: '魅惑之声', type: 'fairy', power: 20, acc: 100 },
         { name: '月亮之力', type: 'fairy', power: 48, acc: 100 },
@@ -182,7 +182,7 @@ export const GYMS = [
       pokemon: { name: '拉普拉斯', id: 131, type: 'ice', lv: 40, hp: 240, atkPow: 32 },
       skills: [
         { name: '冰冻光线', type: 'ice', power: 50, acc: 100 },
-        { name: '暴风雪', type: 'ice', power: 65, acc: 70 },
+        { name: '暴风雪', type: 'ice', power: 65, acc: 90 },
       ],
       preBattle: [
         '向量空间...方向与大小的世界。',
@@ -212,7 +212,7 @@ export const GYMS = [
     leader: {
       name: '概率之王 渡',
       avatar: '🐲',
-      pokemon: { name: '迷你龙', id: 147, type: 'dragon', lv: 45, hp: 260, atkPow: 35 },
+      pokemon: { name: '哈克龙', id: 148, type: 'dragon', lv: 45, hp: 260, atkPow: 35 },
       skills: [
         { name: '龙之怒', type: 'dragon', power: 40, acc: 100 },
         { name: '逆鳞', type: 'dragon', power: 65, acc: 100 },

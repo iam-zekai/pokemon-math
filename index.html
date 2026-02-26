@@ -25,7 +25,7 @@
     <h1>POKEMON<br>MATH BATTLE</h1>
     <p class="subtitle">高中数学对战！</p>
     <p class="best-score" id="best-score"></p>
-    <p class="achievement-summary">成就: <span id="achievement-count">0/11</span></p>
+    <p class="achievement-summary">成就: <span id="achievement-count">0/12</span></p>
     <div class="title-buttons">
       <button class="start-btn" onclick="showSelectScreen()">QUICK BATTLE</button>
       <button class="start-btn gym-btn" onclick="showGymMap()">GYM CHALLENGE</button>
@@ -48,6 +48,7 @@
     </div>
     <div class="pokemon-grid" id="pokemon-grid"></div>
     <button class="confirm-btn" id="confirm-btn" onclick="startBattle()">出发！</button>
+    <button class="back-btn" onclick="backToTitle()">返回</button>
   </div>
 
   <div id="battle-scene">
@@ -59,6 +60,7 @@
       <div class="ground-player"></div>
       <div class="info-box enemy-info">
         <span class="poke-name" id="enemy-name">???</span>
+        <span class="poke-type-badge" id="enemy-type"></span>
         <span class="poke-level" id="enemy-level">Lv.5</span>
         <div class="hp-bar-container">
           <span class="hp-label">HP</span>
@@ -90,7 +92,10 @@
           <div class="dialogue-text" id="dialogue-text"></div>
         </div>
       </div>
-      <div class="dialogue-tap">点击继续...</div>
+      <div class="dialogue-footer">
+        <span class="dialogue-tap">点击继续...</span>
+        <button class="dialogue-skip" id="dialogue-skip">跳过</button>
+      </div>
     </div>
     <div id="event-overlay">
       <div class="event-card">

@@ -114,6 +114,7 @@ body {
   transition: transform 0.1s;
 }
 .confirm-btn:active { transform: translateY(4px); box-shadow: none; }
+#select-screen .back-btn { margin-top: 8px; }
 
 /* ===== Battle ===== */
 #battle-scene { flex: 1; display: none; flex-direction: column; position: relative; }
@@ -137,6 +138,7 @@ body {
 .enemy-info { top: 8px; left: 6px; }
 .player-info { bottom: 8px; right: 6px; }
 .info-box .poke-name { font-family: var(--font-math); font-weight: 700; font-size: 13px; color: #1f2937; }
+.poke-type-badge { font-family: var(--font-math); font-size: 8px; color: #fff; padding: 1px 5px; border-radius: 3px; margin-left: 4px; vertical-align: middle; }
 .info-box .poke-level { font-size: 7px; color: #6b7280; float: right; margin-top: 2px; }
 .hp-bar-container { display: flex; align-items: center; gap: 5px; margin-top: 5px; }
 .hp-label { font-size: 7px; color: #ea580c; font-weight: bold; }
@@ -416,7 +418,14 @@ body {
 .dialogue-content { flex: 1; }
 .dialogue-name { font-family: var(--font-math); font-weight: 700; font-size: 12px; color: #6366f1; margin-bottom: 4px; }
 .dialogue-text { font-family: var(--font-math); font-size: 14px; color: #1f2937; line-height: 1.6; }
-.dialogue-tap { font-family: var(--font-math); font-size: 10px; color: rgba(255,255,255,0.5); text-align: center; margin-top: 6px; animation: pulse-btn 2s infinite; }
+.dialogue-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+.dialogue-tap { font-family: var(--font-math); font-size: 10px; color: rgba(255,255,255,0.5); animation: pulse-btn 2s infinite; }
+.dialogue-skip {
+  font-family: var(--font-math); font-size: 10px; color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  padding: 4px 12px; border-radius: 6px; cursor: pointer;
+}
+.dialogue-skip:hover { background: rgba(255,255,255,0.2); }
 
 /* ===== Event Popup ===== */
 #event-overlay {
@@ -449,6 +458,21 @@ body {
   animation: pulse-btn 1s infinite;
 }
 .badge-earned .badge-icon { font-size: 32px; display: block; margin-bottom: 4px; }
+
+/* ===== Champion Screen ===== */
+.champion-banner {
+  text-align: center; margin: 8px 0;
+  animation: champion-glow 2s ease-in-out infinite;
+}
+.champion-banner .champion-title {
+  font-family: var(--font-math); font-weight: 700; font-size: 16px;
+  color: #fbbf24; margin-bottom: 4px;
+}
+.champion-banner .champion-badges { font-size: 24px; letter-spacing: 4px; }
+@keyframes champion-glow {
+  0%,100% { text-shadow: 0 0 10px rgba(251,191,36,0.3); }
+  50% { text-shadow: 0 0 20px rgba(251,191,36,0.8), 0 0 40px rgba(251,191,36,0.4); }
+}
 
 /* ===== Responsive ===== */
 @media(max-height:700px){

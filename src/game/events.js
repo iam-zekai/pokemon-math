@@ -79,6 +79,36 @@ export const EVENTS = [
     isChallenge: true,
     weight: 2,
   },
+  {
+    id: 'accuracy_up',
+    name: '瞄准镜',
+    icon: '🎯',
+    desc: '捡到瞄准镜！下次攻击必中！',
+    effect(st) {
+      st._nextGuaranteedHit = true
+    },
+    weight: 2,
+  },
+  {
+    id: 'mentor',
+    name: '高人指点',
+    icon: '📚',
+    desc: '遇到一位数学老师！答错时会提示正确答案，持续2回合。',
+    effect(st) {
+      st.statusEffects.player.push({ type: 'mentor', icon: '📚', turns: 2 })
+    },
+    weight: 1,
+  },
+  {
+    id: 'double_dmg',
+    name: '会心一击',
+    icon: '💎',
+    desc: '发现了秘密力量！下次攻击伤害翻倍！',
+    effect(st) {
+      st._nextDoubleDmg = true
+    },
+    weight: 1,
+  },
 ]
 
 // Weighted random pick
