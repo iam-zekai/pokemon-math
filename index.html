@@ -33,11 +33,17 @@
     <div id="high-score" class="high-score">无尽最高分: <span id="high-score-value">0</span></div>
     <div class="badge-case" id="badge-case"></div>
     <button class="settings-icon-btn" onclick="openSettings()">&#9881;</button>
+    <button class="help-icon-btn" onclick="showTutorial()">?</button>
   </div>
 
   <div id="gym-map-screen">
-    <h2>道馆挑战</h2>
-    <div class="gym-list" id="gym-list"></div>
+    <div class="gym-map-header">
+      <h2>数学大陆</h2>
+      <p class="gym-map-subtitle">征服10座道馆，成为数学冠军！</p>
+      <div class="gym-progress-bar"><div class="gym-progress-fill" id="gym-progress-fill"></div></div>
+      <div class="gym-progress-text" id="gym-progress-text">0/10</div>
+    </div>
+    <div class="gym-route" id="gym-route"></div>
     <button class="back-btn" onclick="backToTitle()">返回</button>
   </div>
 
@@ -175,6 +181,38 @@
       <div class="quit-buttons">
         <button onclick="confirmQuit()" class="quit-confirm-btn">退出战斗</button>
         <button onclick="cancelQuit()" class="quit-cancel-btn">继续战斗</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tutorial-overlay" class="tutorial-overlay" style="display:none">
+    <div class="tutorial-panel">
+      <div class="tutorial-pages" id="tutorial-pages">
+        <div class="tutorial-page active" data-page="0">
+          <div class="tutorial-icon">⚡</div>
+          <h3>欢迎来到宝可梦数学对战！</h3>
+          <p>选择宝可梦组成队伍，用数学知识击败敌人！答对题目才能让技能命中。</p>
+        </div>
+        <div class="tutorial-page" data-page="1">
+          <div class="tutorial-icon">🎮</div>
+          <h3>三种模式</h3>
+          <p><b>快速对战</b> — 击败5个敌人获胜<br><b>无尽模式</b> — 看你能撑几波<br><b>道馆挑战</b> — 征服10座道馆成为冠军</p>
+        </div>
+        <div class="tutorial-page" data-page="2">
+          <div class="tutorial-icon">📈</div>
+          <h3>成长系统</h3>
+          <p>答题和战斗积累经验，提升训练师等级。等级越高，可选的宝可梦越多！</p>
+        </div>
+        <div class="tutorial-page" data-page="3">
+          <div class="tutorial-icon">💡</div>
+          <h3>战斗技巧</h3>
+          <p>利用属性克制造成双倍伤害。连续答对获得连击加成。注意计时，超时会自动出招！</p>
+        </div>
+      </div>
+      <div class="tutorial-dots" id="tutorial-dots"></div>
+      <div class="tutorial-buttons">
+        <button class="tutorial-skip" id="tutorial-skip" onclick="closeTutorial()">跳过</button>
+        <button class="tutorial-next" id="tutorial-next" onclick="nextTutorialPage()">下一步</button>
       </div>
     </div>
   </div>

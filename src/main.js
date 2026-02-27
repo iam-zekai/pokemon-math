@@ -1,5 +1,5 @@
 import './styles.css'
-import { showBestScore, showSelectScreen, startBattle, restartGame, setDifficulty, initKeyboard, initTitleSprites, showGymMap, backToTitle, startEndless, switchPokemon, cancelSwitch, toggleBGM, toggleSFX, openSettings, closeSettings, acceptEvolution, declineEvolution, setBGM, quitBattle, confirmQuit, cancelQuit } from './game/engine.js'
+import { showBestScore, showSelectScreen, startBattle, restartGame, setDifficulty, initKeyboard, initTitleSprites, showGymMap, backToTitle, startEndless, switchPokemon, cancelSwitch, toggleBGM, toggleSFX, openSettings, closeSettings, acceptEvolution, declineEvolution, setBGM, quitBattle, confirmQuit, cancelQuit, showTutorial, closeTutorial, nextTutorialPage, checkFirstVisit } from './game/engine.js'
 import { BGM } from './game/sound.js'
 
 // Connect BGM engine to game engine
@@ -24,8 +24,12 @@ window.declineEvolution = declineEvolution
 window.quitBattle = quitBattle
 window.confirmQuit = confirmQuit
 window.cancelQuit = cancelQuit
+window.showTutorial = showTutorial
+window.closeTutorial = closeTutorial
+window.nextTutorialPage = nextTutorialPage
 
 // Init
 initTitleSprites()
 showBestScore()
 initKeyboard()
+checkFirstVisit()

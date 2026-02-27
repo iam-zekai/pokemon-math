@@ -168,3 +168,14 @@ export function getLastSeenRank() {
 export function setLastSeenRank(level) {
   try { localStorage.setItem(LAST_RANK_KEY, String(level)) } catch (e) { /* ignore */ }
 }
+
+// Tutorial seen flag
+const TUTORIAL_KEY = 'pkmn_math_tutorial_seen'
+
+export function hasTutorialSeen() {
+  try { return localStorage.getItem(TUTORIAL_KEY) === '1' } catch (e) { return false }
+}
+
+export function setTutorialSeen() {
+  try { localStorage.setItem(TUTORIAL_KEY, '1') } catch (e) { /* ignore */ }
+}

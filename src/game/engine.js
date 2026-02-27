@@ -5,7 +5,7 @@ import { GYMS } from './gyms.js'
 import { EVENTS, pickRandomEvent } from './events.js'
 import { SFX } from './sound.js'
 import { FX } from './fx.js'
-import { loadBest, saveBest, loadSettings, saveSettings, saveAchievement, ACHIEVEMENT_DEFS, loadAchievements, loadGymProgress, saveGymProgress, getEndlessHighScore, setEndlessHighScore, loadStats, saveStats, calcTrainerEXP, getTrainerRank, TRAINER_RANKS, POKEMON_UNLOCK_MAP, getUnlockedPokemon, getLastSeenRank, setLastSeenRank } from './storage.js'
+import { loadBest, saveBest, loadSettings, saveSettings, saveAchievement, ACHIEVEMENT_DEFS, loadAchievements, loadGymProgress, saveGymProgress, getEndlessHighScore, setEndlessHighScore, loadStats, saveStats, calcTrainerEXP, getTrainerRank, TRAINER_RANKS, POKEMON_UNLOCK_MAP, getUnlockedPokemon, getLastSeenRank, setLastSeenRank, hasTutorialSeen, setTutorialSeen } from './storage.js'
 import { shuffle, randInt, sleep } from './utils.js'
 
 // BGM integration - will be set if bgm.js is available
@@ -603,33 +603,61 @@ export function showGymMap() {
   $('gym-map-screen').style.display = 'flex'
 
   const gymProg = loadGymProgress()
-  const list = $('gym-list')
-  list.innerHTML = ''
+  const badgeCount = gymProg.badges.length
 
-  GYMS.forEach((gym, i) => {
+  // Progress bar
+  const fill = $('gym-progress-fill')
+  if (fill) fill.style.width = (badgeCount / GYMS.length * 100) + '%'
+  const pText = $('gym-progress-text')
+  if (pText) pText.textContent = `${badgeCount}/${GYMS.length} 徽章`
+
+  const route = $('gym-route')
+  route.innerHTML = ''
+
+  // Render gyms in reverse order (top=final boss, bottom=start)
+  const reversed = [...GYMS].reverse()
+  reversed.forEach((gym, ri) => {
+    const i = GYMS.length - 1 - ri // original index
     const isCleared = gymProg.badges.includes(gym.id)
     const isUnlocked = i === 0 || gymProg.badges.includes(GYMS[i - 1].id)
+    const isNext = isUnlocked && !isCleared
 
-    const card = document.createElement('div')
-    card.className = 'gym-card' + (isCleared ? ' cleared' : '') + (!isUnlocked ? ' locked' : '')
-    card.innerHTML = `
-      <div class="gym-badge">${gym.leader.badge}</div>
-      <div class="gym-info">
-        <div class="gym-name">${gym.id}. ${gym.name}</div>
-        <div class="gym-topics">${gym.topics.join(' / ')}</div>
-        <div class="gym-leader">馆主: ${gym.leader.name}</div>
-      </div>
-      <div class="gym-status">${isCleared ? '✅ 再次挑战' : isUnlocked ? '⚔️ 挑战' : '🔒'}</div>
-    `
-
-    if (isUnlocked && !isCleared) {
-      card.onclick = () => selectGym(i)
-    } else if (isCleared) {
-      card.onclick = () => selectGym(i)
+    // Route connector (not before first node)
+    if (ri > 0) {
+      const prevIdx = GYMS.length - ri // the gym above in original order
+      const prevCleared = gymProg.badges.includes(GYMS[prevIdx]?.id)
+      const conn = document.createElement('div')
+      conn.className = 'route-connector' + (prevCleared ? ' active' : '')
+      route.appendChild(conn)
     }
 
-    list.appendChild(card)
+    const node = document.createElement('div')
+    node.className = 'route-node' + (isCleared ? ' cleared' : '') + (isNext ? ' next' : '') + (!isUnlocked ? ' locked' : '')
+    const side = i % 2 === 0 ? 'left' : 'right'
+    node.classList.add('side-' + side)
+
+    node.innerHTML = `
+      <div class="route-badge">${gym.leader.badge}</div>
+      <div class="route-info">
+        <div class="route-gym-name">${gym.name}</div>
+        <div class="route-gym-topics">${gym.topics.join(' / ')}</div>
+        <div class="route-gym-leader">${gym.leader.avatar} ${gym.leader.name}</div>
+      </div>
+      ${isNext ? '<div class="route-action">⚔️</div>' : isCleared ? '<div class="route-check">✅</div>' : !isUnlocked ? '<div class="route-lock">🔒</div>' : ''}
+    `
+
+    if (isUnlocked) {
+      node.onclick = () => { SFX.play('select'); selectGym(i) }
+    }
+
+    route.appendChild(node)
   })
+
+  // Scroll to current progress
+  setTimeout(() => {
+    const nextNode = route.querySelector('.route-node.next')
+    if (nextNode) nextNode.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, 100)
 }
 
 function selectGym(gymIndex) {
@@ -2084,4 +2112,49 @@ export function initTitleSprites() {
     img.src = spr(id)
     imgFallback(img, sprFallback(id))
   })
+}
+
+// ===================================================================
+// TUTORIAL
+// ===================================================================
+let tutorialPage = 0
+const TUTORIAL_TOTAL = 4
+
+export function showTutorial() {
+  tutorialPage = 0
+  const overlay = $('tutorial-overlay')
+  overlay.style.display = 'flex'
+  updateTutorialUI()
+}
+
+export function closeTutorial() {
+  $('tutorial-overlay').style.display = 'none'
+  setTutorialSeen()
+}
+
+export function nextTutorialPage() {
+  tutorialPage++
+  if (tutorialPage >= TUTORIAL_TOTAL) {
+    closeTutorial()
+    return
+  }
+  updateTutorialUI()
+}
+
+function updateTutorialUI() {
+  document.querySelectorAll('.tutorial-page').forEach(p => {
+    p.classList.toggle('active', parseInt(p.dataset.page) === tutorialPage)
+  })
+  // Dots
+  const dots = $('tutorial-dots')
+  dots.innerHTML = Array.from({ length: TUTORIAL_TOTAL }, (_, i) =>
+    `<span class="tutorial-dot${i === tutorialPage ? ' active' : ''}"></span>`
+  ).join('')
+  // Button text
+  $('tutorial-next').textContent = tutorialPage === TUTORIAL_TOTAL - 1 ? '开始游戏！' : '下一步'
+  $('tutorial-skip').style.display = tutorialPage === TUTORIAL_TOTAL - 1 ? 'none' : 'block'
+}
+
+export function checkFirstVisit() {
+  if (!hasTutorialSeen()) showTutorial()
 }
