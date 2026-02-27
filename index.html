@@ -25,12 +25,15 @@
     <h1>POKEMON<br>MATH BATTLE</h1>
     <p class="subtitle">高中数学对战！</p>
     <p class="best-score" id="best-score"></p>
-    <p class="achievement-summary">成就: <span id="achievement-count">0/12</span></p>
+    <p class="achievement-summary">成就: <span id="achievement-count">0/18</span></p>
     <div class="title-buttons">
       <button class="start-btn" onclick="showSelectScreen()">QUICK BATTLE</button>
+      <button class="start-btn endless-btn" onclick="startEndless()">ENDLESS MODE</button>
       <button class="start-btn gym-btn" onclick="showGymMap()">GYM CHALLENGE</button>
     </div>
+    <div id="high-score" class="high-score">无尽最高分: <span id="high-score-value">0</span></div>
     <div class="badge-case" id="badge-case"></div>
+    <button class="settings-icon-btn" onclick="openSettings()">&#9881;</button>
   </div>
 
   <div id="gym-map-screen">
@@ -41,12 +44,14 @@
 
   <div id="select-screen">
     <h2>选择你的宝可梦！</h2>
+    <div class="team-select-info" id="team-select-info">已选: <span id="team-count">0</span>/3</div>
     <div class="difficulty-selector">
       <button class="diff-btn" data-diff="easy" onclick="setDifficulty('easy')">简单</button>
       <button class="diff-btn active" data-diff="normal" onclick="setDifficulty('normal')">普通</button>
       <button class="diff-btn" data-diff="hard" onclick="setDifficulty('hard')">困难</button>
     </div>
     <div class="pokemon-grid" id="pokemon-grid"></div>
+    <div class="team-order" id="team-order"></div>
     <button class="confirm-btn" id="confirm-btn" onclick="startBattle()">出发！</button>
     <button class="back-btn" onclick="backToTitle()">返回</button>
   </div>
@@ -80,9 +85,11 @@
         <div class="exp-bar-container"><div class="exp-bar-fill" id="exp-bar"></div></div>
         <div class="status-icons" id="player-status"></div>
       </div>
+      <div id="team-status" class="team-status"></div>
       <img class="enemy-pokemon" id="enemy-sprite" src="" alt="">
       <img class="player-pokemon" id="player-sprite" src="" alt="">
       <canvas id="fx-canvas"></canvas>
+      <button class="settings-icon-btn battle-settings" onclick="openSettings()">&#9881;</button>
     </div>
     <div id="dialogue-overlay">
       <div class="dialogue-box">
@@ -111,6 +118,7 @@
         <div class="timer-bar" id="timer-bar"></div>
       </div>
       <div class="skill-panel" id="skill-panel"></div>
+      <button id="switch-btn" onclick="switchPokemon()" class="switch-btn" style="display:none">切换宝可梦</button>
       <div class="question-panel" id="question-panel">
         <div class="question-header">
           <span class="question-category" id="question-category"></span>
@@ -120,6 +128,35 @@
         <div class="answer-grid" id="answer-grid"></div>
         <div class="explain-box" id="explain-box"></div>
       </div>
+    </div>
+  </div>
+
+  <div id="switch-overlay" class="switch-overlay" style="display:none">
+    <div class="switch-panel">
+      <h3>选择宝可梦</h3>
+      <div id="switch-options" class="switch-options"></div>
+      <button onclick="cancelSwitch()" class="cancel-btn">取消</button>
+    </div>
+  </div>
+
+  <div id="evolution-overlay" class="evolution-overlay" style="display:none">
+    <div class="evolution-panel">
+      <div id="evolution-content"></div>
+    </div>
+  </div>
+
+  <div id="settings-overlay" class="settings-overlay" style="display:none">
+    <div class="settings-panel">
+      <h3>设置</h3>
+      <div class="setting-row">
+        <span>背景音乐</span>
+        <label class="toggle"><input type="checkbox" id="bgm-toggle" checked onchange="toggleBGM()"><span class="slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <span>音效</span>
+        <label class="toggle"><input type="checkbox" id="sfx-toggle" checked onchange="toggleSFX()"><span class="slider"></span></label>
+      </div>
+      <button onclick="closeSettings()" class="close-settings-btn">关闭</button>
     </div>
   </div>
 
@@ -136,6 +173,8 @@
       <div class="stat-row"><span>正确率</span><span class="stat-val" id="stat-accuracy">0%</span></div>
       <div class="stat-row"><span>最高连击</span><span class="stat-val" id="stat-streak">0</span></div>
       <div class="stat-row"><span>击败对手</span><span class="stat-val" id="stat-defeated">0</span></div>
+      <div class="stat-row" id="stat-wave-row" style="display:none"><span>生存波数</span><span class="stat-val" id="stat-wave">0</span></div>
+      <div class="stat-row" id="stat-score-row" style="display:none"><span>总分</span><span class="stat-val" id="stat-score">0</span></div>
     </div>
     <div class="stats-box" id="topic-stats-box">
       <h3>知识点分析</h3>

@@ -109,6 +109,81 @@ export const EVENTS = [
     },
     weight: 1,
   },
+  {
+    id: 'type_shift',
+    name: '属性变换',
+    icon: '🔄',
+    desc: '遭遇神秘的属性变换！你的宝可梦暂时获得超能力加成，持续3回合！',
+    effect(st) {
+      if (!st.statusEffects.player.find(s => s.type === 'atk_up')) {
+        st.statusEffects.player.push({ type: 'atk_up', icon: '🔄', turns: 3 })
+      }
+      if (!st.statusEffects.player.find(s => s.type === 'def_up')) {
+        st.statusEffects.player.push({ type: 'def_up', icon: '🛡️', turns: 3 })
+      }
+    },
+    weight: 6,
+  },
+  {
+    id: 'mystery_merchant',
+    name: '神秘商人',
+    icon: '🛒',
+    desc: '神秘商人出现！随机赠送一种强化：HP恢复、攻击提升或防御强化！',
+    effect(st) {
+      const roll = Math.random()
+      if (roll < 0.34) {
+        const h = Math.floor(st.pMaxHP * 0.4)
+        st.pHP = Math.min(st.pMaxHP, st.pHP + h)
+      } else if (roll < 0.67) {
+        if (!st.statusEffects.player.find(s => s.type === 'atk_up')) {
+          st.statusEffects.player.push({ type: 'atk_up', icon: '⚔️', turns: 3 })
+        }
+      } else {
+        if (!st.statusEffects.player.find(s => s.type === 'def_up')) {
+          st.statusEffects.player.push({ type: 'def_up', icon: '🛡️', turns: 3 })
+        }
+      }
+    },
+    weight: 5,
+  },
+  {
+    id: 'weather_change',
+    name: '天气变化',
+    icon: '🌤️',
+    desc: '天气突变，阳光普照！攻击力提升，持续3回合！',
+    effect(st) {
+      if (!st.statusEffects.player.find(s => s.type === 'atk_up')) {
+        st.statusEffects.player.push({ type: 'atk_up', icon: '☀️', turns: 3 })
+      }
+    },
+    weight: 5,
+  },
+  {
+    id: 'space_rift',
+    name: '时空裂缝',
+    icon: '🌀',
+    desc: '时空裂缝出现！即将迎战一只超强宝可梦，胜利后获得双倍奖励！',
+    effect(st) {
+      st._nextEnemyBuff = 2.0
+      st._nextEnemyReward = 0.6
+    },
+    weight: 3,
+  },
+  {
+    id: 'special_training',
+    name: '训练特训',
+    icon: '🎓',
+    desc: '遇到特训道场！攻击力大幅提升，防御也得到强化，持续3回合！',
+    effect(st) {
+      if (!st.statusEffects.player.find(s => s.type === 'atk_up')) {
+        st.statusEffects.player.push({ type: 'atk_up', icon: '⚔️', turns: 3 })
+      }
+      if (!st.statusEffects.player.find(s => s.type === 'def_up')) {
+        st.statusEffects.player.push({ type: 'def_up', icon: '🛡️', turns: 3 })
+      }
+    },
+    weight: 5,
+  },
 ]
 
 // Weighted random pick

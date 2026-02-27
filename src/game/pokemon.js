@@ -3,7 +3,7 @@
 // power roughly = original_power * 0.5~0.6, acc stays authentic
 export const POKEMON = [
   {
-    name: '皮卡丘', id: 25, type: 'electric', hp: 110, skills: [
+    name: '皮卡丘', id: 25, type: 'electric', hp: 110, evolution: { name: '雷丘', id: 26 }, skills: [
       { name: '电击', type: 'electric', power: 20, acc: 100 },       // 原作40/100
       { name: '十万伏特', type: 'electric', power: 50, acc: 100 },   // 原作90/100
       { name: '电光一闪', type: 'normal', power: 20, acc: 100 },     // 原作40/100 先制
@@ -74,6 +74,54 @@ export const POKEMON = [
       { name: '未来预知', type: 'psychic', power: 60, acc: 100 },    // 原作120/100 延迟
     ]
   },
+  {
+    name: '快龙', id: 149, type: 'dragon', hp: 130, skills: [
+      { name: '龙之怒', type: 'dragon', power: 40, acc: 100 },   // 原作固定40伤害/100
+      { name: '龙爪', type: 'dragon', power: 42, acc: 95 },      // 原作80/95
+      { name: '飞翔', type: 'flying', power: 50, acc: 95 },      // 原作90/95
+      { name: '逆鳞', type: 'dragon', power: 65, acc: 90 },      // 原作120/90
+    ]
+  },
+  {
+    name: '拉普拉斯', id: 131, type: 'water', hp: 150, skills: [
+      { name: '水枪', type: 'water', power: 20, acc: 100 },      // 原作40/100
+      { name: '冰冻光线', type: 'ice', power: 50, acc: 100 },    // 原作90/100
+      { name: '冲浪', type: 'water', power: 50, acc: 100 },      // 原作90/100
+      { name: '暴风雪', type: 'ice', power: 65, acc: 85 },       // 原作110/70
+    ]
+  },
+  {
+    name: '太阳精灵', id: 196, type: 'psychic', hp: 105, skills: [
+      { name: '念力', type: 'psychic', power: 25, acc: 100 },    // 原作50/100
+      { name: '精神强念', type: 'psychic', power: 50, acc: 100 }, // 原作90/100
+      { name: '暗影球', type: 'ghost', power: 40, acc: 100 },    // 原作80/100
+      { name: '日光强念', type: 'psychic', power: 65, acc: 100 }, // 原作120/100
+    ]
+  },
+  {
+    name: '胡地', id: 65, type: 'psychic', hp: 100, skills: [
+      { name: '念力', type: 'psychic', power: 25, acc: 100 },    // 原作50/100
+      { name: '气功掌', type: 'fighting', power: 30, acc: 100 }, // 原作75/100
+      { name: '超能波', type: 'psychic', power: 45, acc: 100 },  // 原作80/100
+      { name: '精神击破', type: 'psychic', power: 65, acc: 100 }, // 原作120/100
+    ]
+  },
+  {
+    name: '怪力', id: 68, type: 'fighting', hp: 130, skills: [
+      { name: '空手劈', type: 'fighting', power: 25, acc: 100 }, // 原作50/100
+      { name: '动态拳', type: 'fighting', power: 50, acc: 85 },  // 原作100/50
+      { name: '岩崩', type: 'rock', power: 45, acc: 90 },        // 原作75/90
+      { name: '近身战', type: 'fighting', power: 65, acc: 100 }, // 原作120/100
+    ]
+  },
+  {
+    name: '暴鲤龙', id: 130, type: 'water', hp: 130, skills: [
+      { name: '水枪', type: 'water', power: 20, acc: 100 },      // 原作40/100
+      { name: '龙之怒', type: 'dragon', power: 40, acc: 100 },   // 原作固定40伤害
+      { name: '飞翔', type: 'flying', power: 50, acc: 95 },      // 原作90/95
+      { name: '大浪', type: 'water', power: 65, acc: 80 },       // 原作110/80
+    ]
+  },
 ]
 
 // Enemy Pokemon pool
@@ -96,4 +144,14 @@ export const ENEMIES = [
   { name: '海星星', id: 120, type: 'water', atk: 17 },
   { name: '皮皮', id: 35, type: 'fairy', atk: 15 },
   { name: '凯西', id: 63, type: 'psychic', atk: 19 },
+  { name: '大钢蛇', id: 208, type: 'steel', atk: 22 },
+  { name: '胡地', id: 65, type: 'psychic', atk: 22 },
+  { name: '哈克龙', id: 148, type: 'dragon', atk: 24 },
+  { name: '飞天螳螂', id: 123, type: 'bug', atk: 20 },
+  { name: '电击怪', id: 125, type: 'electric', atk: 22 },
+  { name: '鸭嘴火兽', id: 126, type: 'fire', atk: 22 },
+  { name: '凤王', id: 127, type: 'bug', atk: 21 },
+  { name: '肯泰罗', id: 128, type: 'normal', atk: 20 },
+  { name: '袋兽', id: 115, type: 'normal', atk: 21 },
+  { name: '化石翼龙', id: 142, type: 'rock', atk: 23 },
 ]

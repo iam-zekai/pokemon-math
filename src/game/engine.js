@@ -5,8 +5,12 @@ import { GYMS } from './gyms.js'
 import { EVENTS, pickRandomEvent } from './events.js'
 import { SFX } from './sound.js'
 import { FX } from './fx.js'
-import { loadBest, saveBest, loadSettings, saveSettings, saveAchievement, ACHIEVEMENT_DEFS, loadAchievements, loadGymProgress, saveGymProgress } from './storage.js'
+import { loadBest, saveBest, loadSettings, saveSettings, saveAchievement, ACHIEVEMENT_DEFS, loadAchievements, loadGymProgress, saveGymProgress, getEndlessHighScore, setEndlessHighScore } from './storage.js'
 import { shuffle, randInt, sleep } from './utils.js'
+
+// BGM integration - will be set if bgm.js is available
+let BGM = null
+export function setBGM(bgmObj) { BGM = bgmObj }
 
 // Difficulty presets
 const DIFFICULTY = {
@@ -32,13 +36,24 @@ let st = {
   difficulty: 'normal',
   goalEnemies: 5,
   // Gym mode
-  mode: 'quick', // 'quick' | 'gym'
+  mode: 'quick', // 'quick' | 'gym' | 'endless'
   gymId: null,
-  gymStep: 0, // 0..trainers-1 = trainers, trainers = leader
+  gymStep: 0,
   gymData: null,
   isLeaderFight: false,
   _nextEnemyBuff: null,
   _nextEnemyReward: null,
+  // Team system
+  team: [], // [{pokemon, hp, maxHp, evolved, killCount}, ...]
+  activeIdx: 0,
+  selectedTeam: [], // indices into POKEMON during selection
+  // Endless mode
+  wave: 0,
+  endlessScore: 0,
+  // Evolution
+  _evolvedThisBattle: new Set(),
+  // Type tracking
+  _allSuperEffective: true,
 }
 
 // ===================================================================
@@ -111,6 +126,13 @@ function tryAchievement(id) {
   }
 }
 
+function bgmPlay(track) {
+  try { if (BGM) BGM.play(track) } catch (e) { /* ignore */ }
+}
+function bgmStop() {
+  try { if (BGM) BGM.stop() } catch (e) { /* ignore */ }
+}
+
 // ===================================================================
 // DIALOGUE SYSTEM
 // ===================================================================
@@ -157,6 +179,7 @@ function showEventPopup(event) {
       overlay.style.display = 'none'
       document.removeEventListener('keydown', onKey)
       if (event.effect) event.effect(st)
+      syncTeamHP()
       updateUI()
       resolve(event)
     }
@@ -179,7 +202,6 @@ async function handleRandomEvent() {
   const event = pickRandomEvent()
 
   if (event.isChallenge) {
-    // Challenge event: show a bonus question
     event.desc = '一位神秘训练师提出挑战！答对回复25%HP，答错扣15%HP！'
     await showEventPopup(event)
     await handleChallengeQuestion()
@@ -195,12 +217,13 @@ function handleChallengeQuestion() {
     const opts = shuffle([q.a, ...q.w])
 
     $('skill-panel').style.display = 'none'
+    $('switch-btn').style.display = 'none'
     const panel = $('question-panel')
     panel.style.display = 'flex'
     $('question-text').textContent = q.q
     $('explain-box').style.display = 'none'
     $('question-category').textContent = q.cat || '挑战'
-    $('question-diff').textContent = '❓ 挑战'
+    $('question-diff').textContent = '? 挑战'
 
     const grid = $('answer-grid'); grid.innerHTML = ''
     opts.forEach(opt => {
@@ -217,12 +240,14 @@ function handleChallengeQuestion() {
           SFX.play('correct')
           const heal = Math.floor(st.pMaxHP * 0.25)
           st.pHP = Math.min(st.pMaxHP, st.pHP + heal)
+          syncTeamHP()
           msg(`答对了！恢复${heal}HP！`)
           tryAchievement('challenge_win')
         } else {
           SFX.play('wrong')
           const dmg = Math.floor(st.pMaxHP * 0.15)
           st.pHP = Math.max(1, st.pHP - dmg)
+          syncTeamHP()
           msg(`答错了！失去${dmg}HP...`)
         }
         updateUI()
@@ -230,6 +255,7 @@ function handleChallengeQuestion() {
         setTimeout(() => {
           panel.style.display = 'none'
           $('skill-panel').style.display = 'grid'
+          showSwitchBtn()
           msg('选择技能！')
           resolve()
         }, 1200)
@@ -237,6 +263,47 @@ function handleChallengeQuestion() {
       grid.appendChild(btn)
     })
   })
+}
+
+// ===================================================================
+// TEAM HELPERS
+// ===================================================================
+function syncTeamHP() {
+  if (st.team.length > 0 && st.team[st.activeIdx]) {
+    st.team[st.activeIdx].hp = st.pHP
+    st.team[st.activeIdx].maxHp = st.pMaxHP
+  }
+}
+
+function loadActiveFromTeam() {
+  const m = st.team[st.activeIdx]
+  if (!m) return
+  st.player = m.pokemon
+  st.pHP = m.hp
+  st.pMaxHP = m.maxHp
+}
+
+function showSwitchBtn() {
+  const btn = $('switch-btn')
+  if (!btn) return
+  // Show switch button only if team has more than 1 alive member
+  const aliveOthers = st.team.filter((m, i) => i !== st.activeIdx && m.hp > 0)
+  btn.style.display = aliveOthers.length > 0 ? 'block' : 'none'
+}
+
+function updateTeamStatus() {
+  const el = $('team-status')
+  if (!el) return
+  if (st.team.length === 0) { el.innerHTML = ''; return }
+  el.innerHTML = st.team.map((m, i) => {
+    const active = i === st.activeIdx ? ' active' : ''
+    const fainted = m.hp <= 0 ? ' fainted' : ''
+    const hpPct = Math.max(0, m.hp / m.maxHp * 100)
+    return `<div class="team-indicator${active}${fainted}" title="${m.pokemon.name} ${m.hp}/${m.maxHp}">
+      <img src="${spr(m.pokemon.id)}" alt="${m.pokemon.name}">
+      <div class="team-hp-mini"><div class="team-hp-fill" style="width:${hpPct}%"></div></div>
+    </div>`
+  }).join('')
 }
 
 // ===================================================================
@@ -272,23 +339,29 @@ export function showBestScore() {
       badgeCase.appendChild(slot)
     })
   }
+
+  // Show endless high score
+  const hsEl = $('high-score-value')
+  if (hsEl) {
+    hsEl.textContent = getEndlessHighScore()
+  }
+
+  // Apply saved settings
+  applySettings()
+
+  bgmPlay('title')
 }
 
-export function showSelectScreen() {
-  SFX.init()
-  SFX.play('select')
-  st.mode = 'quick'
-
-  // Read difficulty setting
-  const settings = loadSettings()
-  st.difficulty = settings.difficulty || 'normal'
-
-  $('title-screen').style.display = 'none'
-  $('gym-map-screen').style.display = 'none'
-  $('select-screen').style.display = 'flex'
+function renderSelectGrid() {
   const g = $('pokemon-grid'); g.innerHTML = ''
   POKEMON.forEach((p, i) => {
     const d = document.createElement('div'); d.className = 'pokemon-card'
+    // Check if already selected in team
+    const teamIdx = st.selectedTeam.indexOf(i)
+    if (teamIdx >= 0) {
+      d.classList.add('selected')
+      d.dataset.teamNum = teamIdx + 1
+    }
     const cardImg = document.createElement('img')
     cardImg.src = spr(p.id)
     cardImg.alt = p.name
@@ -297,13 +370,78 @@ export function showSelectScreen() {
     d.insertAdjacentHTML('beforeend', `<span class="name">${p.name}</span>
       <span class="type-badge" style="background:${TYPE_COLORS[p.type]}">${p.type}</span>
       <span class="stats-preview">HP:${p.hp}</span>`)
+    if (teamIdx >= 0) {
+      d.insertAdjacentHTML('beforeend', `<span class="team-num">${teamIdx + 1}</span>`)
+    }
     d.onclick = () => { SFX.play('select'); selPoke(i) }
     g.appendChild(d)
   })
+}
 
-  // Difficulty selector - show in quick mode
-  document.querySelector('.difficulty-selector').style.display = st.mode === 'quick' ? 'flex' : 'none'
+function updateTeamOrder() {
+  const el = $('team-order')
+  if (!el) return
+  el.innerHTML = st.selectedTeam.map((idx, i) => {
+    const p = POKEMON[idx]
+    return `<div class="team-order-item">
+      <img src="${spr(p.id)}" alt="${p.name}">
+      <span>${i + 1}. ${p.name}</span>
+    </div>`
+  }).join('')
+}
+
+export function showSelectScreen() {
+  SFX.init()
+  SFX.play('select')
+  st.mode = 'quick'
+
+  const settings = loadSettings()
+  st.difficulty = settings.difficulty || 'normal'
+
+  st.selectedTeam = []
+  st.selectedIdx = -1
+
+  $('title-screen').style.display = 'none'
+  $('gym-map-screen').style.display = 'none'
+  $('select-screen').style.display = 'flex'
+
+  $('team-count').textContent = '0'
+  renderSelectGrid()
+  updateTeamOrder()
+
+  document.querySelector('.difficulty-selector').style.display = 'flex'
   updateDifficultyUI()
+  $('confirm-btn').style.display = 'none'
+  const tsi = $('team-select-info')
+  if (tsi) tsi.style.display = 'block'
+}
+
+// ===================================================================
+// ENDLESS MODE
+// ===================================================================
+export function startEndless() {
+  SFX.init()
+  SFX.play('select')
+  st.mode = 'endless'
+
+  const settings = loadSettings()
+  st.difficulty = settings.difficulty || 'normal'
+
+  st.selectedTeam = []
+  st.selectedIdx = -1
+
+  $('title-screen').style.display = 'none'
+  $('select-screen').style.display = 'flex'
+
+  $('team-count').textContent = '0'
+  renderSelectGrid()
+  updateTeamOrder()
+
+  document.querySelector('.difficulty-selector').style.display = 'flex'
+  updateDifficultyUI()
+  $('confirm-btn').style.display = 'none'
+  const tsi = $('team-select-info')
+  if (tsi) tsi.style.display = 'block'
 }
 
 // ===================================================================
@@ -338,7 +476,6 @@ export function showGymMap() {
     if (isUnlocked && !isCleared) {
       card.onclick = () => selectGym(i)
     } else if (isCleared) {
-      // Allow replay
       card.onclick = () => selectGym(i)
     }
 
@@ -353,30 +490,22 @@ function selectGym(gymIndex) {
   st.gymData = GYMS[gymIndex]
   st.gymStep = 0
   st.isLeaderFight = false
-  st.difficulty = 'normal' // Gym uses its own scaling
+  st.difficulty = 'normal'
+
+  st.selectedTeam = []
+  st.selectedIdx = -1
 
   $('gym-map-screen').style.display = 'none'
   $('select-screen').style.display = 'flex'
 
-  const g = $('pokemon-grid'); g.innerHTML = ''
-  POKEMON.forEach((p, i) => {
-    const d = document.createElement('div'); d.className = 'pokemon-card'
-    const cardImg = document.createElement('img')
-    cardImg.src = spr(p.id)
-    cardImg.alt = p.name
-    imgFallback(cardImg, sprFallback(p.id))
-    d.appendChild(cardImg)
-    d.insertAdjacentHTML('beforeend', `<span class="name">${p.name}</span>
-      <span class="type-badge" style="background:${TYPE_COLORS[p.type]}">${p.type}</span>
-      <span class="stats-preview">HP:${p.hp}</span>`)
-    d.onclick = () => { SFX.play('select'); selPoke(i) }
-    g.appendChild(d)
-  })
+  $('team-count').textContent = '0'
+  renderSelectGrid()
+  updateTeamOrder()
 
-  // Hide difficulty selector in gym mode
   document.querySelector('.difficulty-selector').style.display = 'none'
-  st.selectedIdx = -1
   $('confirm-btn').style.display = 'none'
+  const tsi = $('team-select-info')
+  if (tsi) tsi.style.display = 'block'
 }
 
 export function backToTitle() {
@@ -403,19 +532,40 @@ export function setDifficulty(diff) {
 }
 
 function selPoke(i) {
-  st.selectedIdx = i
-  document.querySelectorAll('.pokemon-card').forEach((c, j) => c.classList.toggle('selected', j === i))
-  $('confirm-btn').style.display = 'block'
+  const existing = st.selectedTeam.indexOf(i)
+  if (existing >= 0) {
+    // Deselect
+    st.selectedTeam.splice(existing, 1)
+  } else if (st.selectedTeam.length < 3) {
+    st.selectedTeam.push(i)
+  } else {
+    // Already 3 selected, ignore
+    return
+  }
+
+  $('team-count').textContent = st.selectedTeam.length
+  renderSelectGrid()
+  updateTeamOrder()
+  $('confirm-btn').style.display = st.selectedTeam.length === 3 ? 'block' : 'none'
 }
 
 // ===================================================================
 // BATTLE INIT
 // ===================================================================
 export function startBattle() {
-  if (st.selectedIdx < 0) return
+  if (st.selectedTeam.length !== 3) return
   SFX.play('select')
-  st.player = { ...POKEMON[st.selectedIdx] }
-  st.pHP = st.player.hp; st.pMaxHP = st.player.hp
+
+  bgmStop()
+
+  // Build team
+  st.team = st.selectedTeam.map(idx => {
+    const p = { ...POKEMON[idx] }
+    return { pokemon: p, hp: p.hp, maxHp: p.hp, evolved: false, killCount: 0 }
+  })
+  st.activeIdx = 0
+  loadActiveFromTeam()
+
   st.round = 1; st.streak = 0; st.maxStreak = 0
   st.correct = 0; st.wrong = 0; st.defeated = 0; st.busy = false
   st.topicStats = {}
@@ -425,15 +575,20 @@ export function startBattle() {
   st._nextGuaranteedHit = false
   st._nextDoubleDmg = false
   st._isChampion = false
+  st._evolvedThisBattle = new Set()
+  st._allSuperEffective = true
+  st.wave = 0
+  st.endlessScore = 0
   usedQuestions = new Set()
 
   if (st.mode === 'gym') {
-    // Gym mode: filter questions by gym topics
     const gymQ = Q_BANK.filter(q => st.gymData.topics.includes(q.cat) && (q.diff || 1) <= st.gymData.maxDiff)
-    // If not enough questions, also include some unfiltered ones
     const extra = Q_BANK.filter(q => !st.gymData.topics.includes(q.cat) && (q.diff || 1) <= st.gymData.maxDiff)
-    st.qBank = shuffle([...gymQ, ...gymQ, ...extra.slice(0, 10)]) // double gym questions + some extra
-    st.goalEnemies = st.gymData.trainers + 1 // trainers + leader
+    st.qBank = shuffle([...gymQ, ...gymQ, ...extra.slice(0, 10)])
+    st.goalEnemies = st.gymData.trainers + 1
+  } else if (st.mode === 'endless') {
+    st.qBank = shuffle([...Q_BANK])
+    st.goalEnemies = 999999 // endless
   } else {
     const diff = DIFFICULTY[st.difficulty]
     st.qBank = shuffle([...Q_BANK])
@@ -442,10 +597,12 @@ export function startBattle() {
 
   // Track used Pokemon for achievement
   const settings = loadSettings()
-  if (!settings.usedPokemon.includes(st.player.id)) {
-    settings.usedPokemon.push(st.player.id)
-    saveSettings(settings)
-  }
+  st.team.forEach(m => {
+    if (!settings.usedPokemon.includes(m.pokemon.id)) {
+      settings.usedPokemon.push(m.pokemon.id)
+    }
+  })
+  saveSettings(settings)
   if (settings.usedPokemon.length >= POKEMON.length) {
     tryAchievement('all_pokemon')
   }
@@ -463,20 +620,29 @@ export function startBattle() {
   imgFallback(playerSpr, sprBackFallback(st.player.id))
 
   if (st.mode === 'gym') {
-    // Show gym intro dialogue
     $('difficulty-badge').textContent = st.gymData.name
     spawnEnemy()
     renderSkills()
     updateUI()
+    bgmPlay('battle')
     showDialogue('旁白', '📖', st.gymData.intro, () => {
       msg(`${st.player.name}，就决定是你了！`)
     })
+  } else if (st.mode === 'endless') {
+    $('difficulty-badge').textContent = '无尽模式'
+    st.wave = 1
+    spawnEnemy()
+    renderSkills()
+    updateUI()
+    bgmPlay('battle')
+    msg(`无尽模式开始！第${st.wave}波！`)
   } else {
     const diff = DIFFICULTY[st.difficulty]
     $('difficulty-badge').textContent = diff.label
     spawnEnemy()
     renderSkills()
     updateUI()
+    bgmPlay('battle')
     msg(`${st.player.name}，就决定是你了！`)
   }
 }
@@ -489,7 +655,6 @@ function spawnEnemy() {
   }
 
   if (st.mode === 'gym') {
-    // Spawn a gym trainer - use enemies matching gym type, or random
     const gymTypes = st.gymData.enemyTypes || []
     let pool = ENEMIES.filter(e => gymTypes.includes(e.type))
     if (pool.length === 0) pool = ENEMIES
@@ -498,13 +663,50 @@ function spawnEnemy() {
     const scale = (0.8 + st.round * 0.3) * st.gymData.trainerScale
     let maxHP = Math.floor(80 * scale)
 
-    // Apply buff from event
     if (st._nextEnemyBuff) {
       maxHP = Math.floor(maxHP * st._nextEnemyBuff)
     }
 
     st.enemy = { ...base, lv, atkPow: Math.floor((base.atk + st.round * 2) * st.gymData.trainerScale) }
     st.eHP = maxHP; st.eMaxHP = maxHP
+  } else if (st.mode === 'endless') {
+    const base = ENEMIES[randInt(0, ENEMIES.length - 1)]
+    const lv = Math.min(5 + st.wave * 3, 99)
+    const hpScale = 1 + (st.wave - 1) * 0.05
+    const atkScale = 1 + (st.wave - 1) * 0.03
+    let maxHP = Math.floor(80 * hpScale)
+
+    // Mini-boss every 5th wave
+    const isBoss5 = st.wave % 5 === 0 && st.wave % 10 !== 0
+    // Gym leader boss every 10th wave
+    const isBoss10 = st.wave % 10 === 0
+
+    if (isBoss10) {
+      // Random gym leader as boss
+      const gym = GYMS[randInt(0, GYMS.length - 1)]
+      const pk = gym.leader.pokemon
+      st.enemy = {
+        name: `${gym.leader.name}的${pk.name}`, id: pk.id, type: pk.type, lv: Math.min(pk.lv + st.wave, 99),
+        atkPow: Math.floor(pk.atkPow * atkScale * 1.3),
+        leaderName: gym.leader.name,
+        leaderSkills: gym.leader.skills,
+      }
+      maxHP = Math.floor(pk.hp * hpScale * 1.3)
+      st.eHP = maxHP; st.eMaxHP = maxHP
+      st.isLeaderFight = false // not a real gym leader fight
+    } else if (isBoss5) {
+      st.enemy = { ...base, name: `强化${base.name}`, lv, atkPow: Math.floor((base.atk + st.wave * 2) * atkScale * 1.5) }
+      maxHP = Math.floor(maxHP * 1.5)
+      st.eHP = maxHP; st.eMaxHP = maxHP
+    } else {
+      st.enemy = { ...base, lv, atkPow: Math.floor((base.atk + st.wave * 2) * atkScale) }
+      st.eHP = maxHP; st.eMaxHP = maxHP
+    }
+
+    if (st._nextEnemyBuff) {
+      st.eMaxHP = Math.floor(st.eMaxHP * st._nextEnemyBuff)
+      st.eHP = st.eMaxHP
+    }
   } else {
     const diff = DIFFICULTY[st.difficulty]
     const base = ENEMIES[randInt(0, ENEMIES.length - 1)]
@@ -531,7 +733,14 @@ function spawnEnemy() {
   imgFallback(eSprite, sprFallback(st.enemy.id))
   eSprite.className = 'enemy-pokemon enter-anim'
   setTimeout(() => eSprite.classList.remove('enter-anim'), 400)
-  $('level-indicator').textContent = st.mode === 'gym' ? `训练师 ${st.gymStep + 1}/${st.gymData.trainers}` : `ROUND ${st.round}`
+
+  if (st.mode === 'endless') {
+    $('level-indicator').textContent = `WAVE ${st.wave}`
+  } else if (st.mode === 'gym') {
+    $('level-indicator').textContent = `训练师 ${st.gymStep + 1}/${st.gymData.trainers}`
+  } else {
+    $('level-indicator').textContent = `ROUND ${st.round}`
+  }
   $('player-level').textContent = `Lv.${5 + st.defeated * 3}`
 }
 
@@ -568,7 +777,8 @@ function spawnGymLeader() {
   $('level-indicator').textContent = '馆主战！'
   $('player-level').textContent = `Lv.${5 + st.defeated * 3}`
 
-  // Show leader pre-battle dialogue, then allow fighting
+  bgmPlay('gym')
+
   showDialogue(leader.name, leader.avatar, leader.preBattle, () => {
     msg(`馆主${leader.name}发起了挑战！`)
   })
@@ -594,12 +804,18 @@ function updateUI() {
   if (st.streak >= 2) { si.style.display = 'block'; si.textContent = `🔥 x${st.streak}` }
   else si.style.display = 'none'
 
-  $('exp-bar').style.width = (Math.min(st.defeated, st.goalEnemies) / st.goalEnemies * 100) + '%'
+  if (st.mode === 'endless') {
+    $('exp-bar').style.width = '100%'
+  } else {
+    $('exp-bar').style.width = (Math.min(st.defeated, st.goalEnemies) / st.goalEnemies * 100) + '%'
+  }
 
   $('player-status').innerHTML =
     st.statusEffects.player.map(s => `<span class="status-icon">${s.icon}</span>`).join('')
   $('enemy-status').innerHTML =
     st.statusEffects.enemy.map(s => `<span class="status-icon">${s.icon}</span>`).join('')
+
+  updateTeamStatus()
 }
 
 function renderSkills() {
@@ -613,6 +829,177 @@ function renderSkills() {
     btn.onclick = () => useSkill(i)
     panel.appendChild(btn)
   })
+  showSwitchBtn()
+}
+
+// ===================================================================
+// SWITCH POKEMON
+// ===================================================================
+export function switchPokemon() {
+  if (st.busy) return
+  SFX.play('select')
+
+  const overlay = $('switch-overlay')
+  overlay.style.display = 'flex'
+  const options = $('switch-options')
+  options.innerHTML = ''
+
+  st.team.forEach((m, i) => {
+    if (i === st.activeIdx) return // skip current
+    const card = document.createElement('div')
+    card.className = 'switch-card' + (m.hp <= 0 ? ' fainted' : '')
+    const hpPct = Math.max(0, m.hp / m.maxHp * 100)
+    card.innerHTML = `
+      <img src="${spr(m.pokemon.id)}" alt="${m.pokemon.name}">
+      <div class="switch-info">
+        <div class="switch-name">${m.pokemon.name}</div>
+        <div class="switch-hp-bar"><div class="switch-hp-fill" style="width:${hpPct}%"></div></div>
+        <div class="switch-hp-text">${m.hp}/${m.maxHp}</div>
+      </div>
+    `
+    if (m.hp > 0) {
+      card.onclick = () => doSwitch(i)
+    }
+    options.appendChild(card)
+  })
+}
+
+export function cancelSwitch() {
+  SFX.play('select')
+  $('switch-overlay').style.display = 'none'
+}
+
+async function doSwitch(newIdx) {
+  $('switch-overlay').style.display = 'none'
+  st.busy = true
+  SFX.play('select')
+
+  // Save current HP
+  syncTeamHP()
+
+  // Enemy gets a free attack on switch
+  msg(`收回${st.player.name}！${st.enemy.name}趁机攻击！`)
+  await sleep(400)
+  await playAtk(false)
+  SFX.play('hit')
+
+  fx.resize()
+  const pe = $('player-sprite')
+  const pr = pe.getBoundingClientRect()
+  const br = $('battle-bg').getBoundingClientRect()
+  const px = pr.left - br.left + pr.width / 2, py = pr.top - br.top + pr.height / 2
+
+  const enemyTypeMulti = getTypeMultiplier(st.enemy.type, st.player.type)
+  fx.typeFX(st.enemy.type, px, py)
+
+  let dmg = st.enemy.atkPow + randInt(0, 5)
+  dmg = Math.floor(dmg * enemyTypeMulti)
+  const defBuff = st.statusEffects.player.find(s => s.type === 'def_up')
+  if (defBuff) dmg = Math.floor(dmg * 0.7)
+
+  st.pHP = Math.max(0, st.pHP - dmg)
+  syncTeamHP()
+  showDmg('player', dmg)
+  updateUI()
+  await sleep(500)
+
+  // Check if current fainted from free attack
+  if (st.pHP <= 0) {
+    // If the switched-to Pokemon is still alive, proceed with switch
+    if (st.team[newIdx].hp > 0) {
+      performSwitch(newIdx)
+    } else {
+      // Check if all fainted
+      if (isTeamWiped()) {
+        showResult(false)
+        return
+      }
+    }
+  } else {
+    // Normal switch
+    performSwitch(newIdx)
+  }
+
+  st.busy = false
+  $('question-panel').style.display = 'none'
+  $('skill-panel').style.display = 'grid'
+  showSwitchBtn()
+  msg('选择技能！')
+  updateUI()
+}
+
+function performSwitch(newIdx) {
+  syncTeamHP()
+  st.activeIdx = newIdx
+  loadActiveFromTeam()
+  st.statusEffects.player = [] // clear status on switch
+
+  $('player-name').textContent = st.player.name
+  const playerSpr = $('player-sprite')
+
+  // Switch particle effect
+  if (fx) {
+    fx.resize()
+    const pr = playerSpr.getBoundingClientRect()
+    const br = $('battle-bg').getBoundingClientRect()
+    fx.switchPokemon(pr.left - br.left + pr.width / 2, pr.top - br.top + pr.height / 2)
+  }
+
+  playerSpr.src = sprBack(st.player.id)
+  imgFallback(playerSpr, sprBackFallback(st.player.id))
+
+  renderSkills()
+  SFX.play('switch')
+  msg(`去吧，${st.player.name}！`)
+}
+
+function isTeamWiped() {
+  return st.team.every(m => m.hp <= 0)
+}
+
+async function handleFaint() {
+  // Current Pokemon fainted, find next alive
+  if (isTeamWiped()) {
+    showResult(false)
+    return true
+  }
+
+  // Force switch to next alive Pokemon
+  msg(`${st.player.name}倒下了！选择下一只宝可梦！`)
+  await sleep(600)
+
+  return new Promise(resolve => {
+    const overlay = $('switch-overlay')
+    overlay.style.display = 'flex'
+    const options = $('switch-options')
+    options.innerHTML = ''
+    // Hide cancel button during forced switch
+    const cancelBtn = overlay.querySelector('.cancel-btn')
+    if (cancelBtn) cancelBtn.style.display = 'none'
+
+    st.team.forEach((m, i) => {
+      if (i === st.activeIdx || m.hp <= 0) return
+      const card = document.createElement('div')
+      card.className = 'switch-card'
+      const hpPct = Math.max(0, m.hp / m.maxHp * 100)
+      card.innerHTML = `
+        <img src="${spr(m.pokemon.id)}" alt="${m.pokemon.name}">
+        <div class="switch-info">
+          <div class="switch-name">${m.pokemon.name}</div>
+          <div class="switch-hp-bar"><div class="switch-hp-fill" style="width:${hpPct}%"></div></div>
+          <div class="switch-hp-text">${m.hp}/${m.maxHp}</div>
+        </div>
+      `
+      card.onclick = () => {
+        overlay.style.display = 'none'
+        if (cancelBtn) cancelBtn.style.display = 'block'
+        performSwitch(i)
+        updateUI()
+        resolve(false)
+      }
+      options.appendChild(card)
+    })
+  })
 }
 
 // ===================================================================
@@ -624,6 +1011,10 @@ function getQuestion() {
   let maxDiff
   if (st.mode === 'gym') {
     maxDiff = st.gymData.maxDiff
+  } else if (st.mode === 'endless') {
+    if (st.wave <= 3) maxDiff = 1
+    else if (st.wave <= 7) maxDiff = 2
+    else maxDiff = 3
   } else {
     if (st.round <= 2) maxDiff = Math.min(1, diff.maxDiffQ)
     else if (st.round <= 3) maxDiff = Math.min(2, diff.maxDiffQ)
@@ -679,6 +1070,7 @@ function showQuestion() {
   st.curQ = { text: q.q, answer: q.a, options: opts, cat: q.cat || '其他', diff: q.diff || 1, exp: q.exp || '' }
 
   $('skill-panel').style.display = 'none'
+  $('switch-btn').style.display = 'none'
   const panel = $('question-panel')
   panel.style.display = 'flex'
   $('question-text').textContent = q.q
@@ -741,7 +1133,6 @@ function submitAnswer(chosen, btn) {
 
   if (chosen === st.curQ.answer) {
     st.topicStats[topic].correct++
-    // Check speed achievement
     const elapsed = (Date.now() - questionStartTime) / 1000
     if (elapsed < 3 && st.curQ.diff === 3) {
       tryAchievement('speed_demon')
@@ -757,7 +1148,6 @@ async function onCorrect() {
   if (st.streak > st.maxStreak) st.maxStreak = st.streak
   SFX.play('correct')
 
-  // Streak achievements
   if (st.streak >= 5) tryAchievement('streak_5')
   if (st.streak >= 10) tryAchievement('streak_10')
 
@@ -781,12 +1171,16 @@ async function onCorrect() {
   const diffBonus = 1 + (st.curQ.diff - 1) * 0.15
   const typeMultiplier = getTypeMultiplier(sk.type, st.enemy.type)
 
+  // Track super effective for achievement
+  if (typeMultiplier <= 1 && sk.power > 0) st._allSuperEffective = false
+
   let dmg = Math.floor(sk.power * streakBonus * diffBonus * typeMultiplier)
 
-  // Heal-only skill (like Snorlax's Rest)
+  // Heal-only skill
   if (sk.healFlat && sk.power === 0) {
     const h = sk.healFlat
     st.pHP = Math.min(st.pMaxHP, st.pHP + h)
+    syncTeamHP()
     msg(`${st.player.name}恢复了${h}点HP！`)
     fx.resize()
     const pe = $('player-sprite')
@@ -802,7 +1196,6 @@ async function onCorrect() {
   const isCrit = Math.random() < 0.15
   if (isCrit) dmg = Math.floor(dmg * 1.5)
 
-  // Double damage event buff
   if (st._nextDoubleDmg) { dmg = Math.floor(dmg * 2); st._nextDoubleDmg = false }
 
   const atkBuff = st.statusEffects.player.find(s => s.type === 'atk_up')
@@ -848,8 +1241,11 @@ async function onCorrect() {
   const ex = er.left - br2.left + er.width / 2, ey = er.top - br2.top + er.height / 2
 
   fx.typeFX(sk.type, ex, ey)
-  if (typeMultiplier > 1) fx.burst(ex, ey, 20, ['#fbbf24', '#fff'], { sp: 5, sz: 5 })
-  if (sk.power >= 50) screenFlash(TYPE_COLORS[sk.type] || '#fff')
+  if (typeMultiplier > 1) fx.superEffective(ex, ey)
+  if (sk.power >= 50) {
+    screenFlash(TYPE_COLORS[sk.type] || '#fff')
+    fx.screenShake($('battle-bg'))
+  }
   if (sk.power >= 60) {
     fx.beam(br2.width * 0.25, br2.height * 0.7, ex, ey,
       [TYPE_COLORS[sk.type] || '#fff', '#fff'], 20)
@@ -865,6 +1261,7 @@ async function onCorrect() {
   if (sk.heal) {
     const h = Math.floor(dmg * 0.5)
     st.pHP = Math.min(st.pMaxHP, st.pHP + h)
+    syncTeamHP()
     const pe2 = $('player-sprite')
     const pr2 = pe2.getBoundingClientRect()
     fx.heal(pr2.left - br2.left + pr2.width / 2, pr2.top - br2.top + pr2.height / 2)
@@ -891,7 +1288,6 @@ async function onWrong(showExplain = false) {
   SFX.play('wrong')
   updateUI()
 
-  // Mentor buff: always show explanation
   const hasMentor = st.statusEffects.player.find(s => s.type === 'mentor')
   if (hasMentor) showExplain = true
 
@@ -904,7 +1300,6 @@ async function onWrong(showExplain = false) {
     explainEl.style.display = 'none'
   }
 
-  // Leader uses named skill in attack message
   if (st.isLeaderFight && st.enemy.leaderSkills) {
     const sk = st.enemy.leaderSkills[randInt(0, st.enemy.leaderSkills.length - 1)]
     msg(`${st.enemy.leaderName}的${st.enemy.name}使用${sk.name}！`)
@@ -933,10 +1328,17 @@ async function onWrong(showExplain = false) {
   if (defBuff) dmg = Math.floor(dmg * 0.7)
 
   st.pHP = Math.max(0, st.pHP - dmg)
+  syncTeamHP()
   showDmg('player', dmg)
   updateUI()
 
-  if (st.pHP <= 0) { await sleep(400); showResult(false); return }
+  if (st.pHP <= 0) {
+    await sleep(400)
+    const wiped = await handleFaint()
+    if (wiped) return
+    endTurn()
+    return
+  }
   await sleep(500)
   endTurn()
 }
@@ -944,9 +1346,15 @@ async function onWrong(showExplain = false) {
 async function enemyDefeated() {
   st.defeated++; st.round++
   if (st.mode === 'gym') st.gymStep++
+  if (st.mode === 'endless') st.wave++
   SFX.play('defeat')
   const el = $('enemy-sprite')
   el.classList.add('faint-anim')
+
+  // Track kills per team member
+  if (st.team[st.activeIdx]) {
+    st.team[st.activeIdx].killCount = (st.team[st.activeIdx].killCount || 0) + 1
+  }
 
   fx.resize()
   const er = el.getBoundingClientRect()
@@ -961,10 +1369,17 @@ async function enemyDefeated() {
   if (settings.totalDefeated >= 10) tryAchievement('defeat_10')
   if (settings.totalDefeated >= 50) tryAchievement('defeat_50')
 
+  // Endless achievements
+  if (st.mode === 'endless') {
+    if (st.wave >= 10) tryAchievement('endless_10')
+    if (st.wave >= 20) tryAchievement('endless_20')
+  }
+
   // Check for buffed enemy reward
   if (st._nextEnemyReward) {
     const heal = Math.floor(st.pMaxHP * st._nextEnemyReward)
     st.pHP = Math.min(st.pMaxHP, st.pHP + heal)
+    syncTeamHP()
     msg(`击败强敌！额外恢复${heal}HP！`)
     st._nextEnemyBuff = null
     st._nextEnemyReward = null
@@ -975,30 +1390,36 @@ async function enemyDefeated() {
     await sleep(900)
   }
 
+  // Check evolution
+  await checkEvolution()
+
   // Gym leader defeated
   if (st.isLeaderFight && st.mode === 'gym') {
     await gymLeaderDefeated()
     return
   }
 
-  // Check win in quick mode or gym all enemies done
-  if (st.defeated >= st.goalEnemies) { showResult(true); return }
+  // Check win in quick mode
+  if (st.mode !== 'endless' && st.defeated >= st.goalEnemies) { showResult(true); return }
 
   // Random event between battles
   el.classList.remove('faint-anim')
   el.style.opacity = '1'; el.style.transform = ''
   await handleRandomEvent()
 
-  // Heal between rounds (less before gym leader)
+  // Heal between rounds
   const healRate = (st.mode === 'gym' && st.gymStep >= st.gymData.trainers) ? 0.08 : 0.15
   const heal = Math.floor(st.pMaxHP * healRate)
   st.pHP = Math.min(st.pMaxHP, st.pHP + heal)
+  syncTeamHP()
 
   spawnEnemy()
   updateUI()
 
   if (st.isLeaderFight) {
     // Leader dialogue already shown in spawnGymLeader
+  } else if (st.mode === 'endless') {
+    msg(`第${st.wave}波！${st.enemy.name}出现了！(+${heal}HP)`)
   } else {
     msg(`野生的${st.enemy.name}出现了！(+${heal}HP)`)
   }
@@ -1006,27 +1427,134 @@ async function enemyDefeated() {
   endTurn()
 }
 
+// ===================================================================
+// EVOLUTION SYSTEM
+// ===================================================================
+async function checkEvolution() {
+  const member = st.team[st.activeIdx]
+  if (!member || member.evolved) return
+  if (st._evolvedThisBattle.has(st.activeIdx)) return
+
+  const pokemon = member.pokemon
+  if (!pokemon.evolution) return
+  if (member.killCount < 3) return
+
+  // Show evolution prompt
+  const accepted = await showEvolutionPrompt(pokemon)
+  if (accepted) {
+    await performEvolution(member, pokemon)
+  }
+}
+
+function showEvolutionPrompt(pokemon) {
+  return new Promise(resolve => {
+    const overlay = $('evolution-overlay')
+    overlay.style.display = 'flex'
+    const content = $('evolution-content')
+    content.innerHTML = `
+      <div class="evolution-title">${pokemon.name} 想要进化！</div>
+      <div class="evolution-sprites">
+        <img src="${spr(pokemon.id)}" alt="${pokemon.name}">
+        <span class="evolution-arrow">→</span>
+        <img src="${spr(pokemon.evolution.id)}" alt="${pokemon.evolution.name}">
+      </div>
+      <div class="evolution-info">${pokemon.evolution.name} - HP+20%</div>
+      <div class="evolution-buttons">
+        <button class="evolution-accept" id="evo-accept">进化！</button>
+        <button class="evolution-decline" id="evo-decline">取消</button>
+      </div>
+    `
+    $('evo-accept').onclick = () => {
+      overlay.style.display = 'none'
+      resolve(true)
+    }
+    $('evo-decline').onclick = () => {
+      overlay.style.display = 'none'
+      resolve(false)
+    }
+  })
+}
+
+async function performEvolution(member, pokemon) {
+  SFX.play('levelup')
+  st._evolvedThisBattle.add(st.activeIdx)
+  member.evolved = true
+  tryAchievement('evolution')
+
+  // Flash animation
+  const playerSpr = $('player-sprite')
+  playerSpr.classList.add('evolution-flash')
+
+  // Evolution particle effect
+  fx.resize()
+  const pr = playerSpr.getBoundingClientRect()
+  const br = $('battle-bg').getBoundingClientRect()
+  fx.evolution(pr.left - br.left + pr.width / 2, pr.top - br.top + pr.height / 2)
+
+  await sleep(600)
+
+  // Update Pokemon data
+  const evo = pokemon.evolution
+  member.pokemon = {
+    ...member.pokemon,
+    name: evo.name,
+    id: evo.id,
+    skills: evo.skills || member.pokemon.skills,
+  }
+  member.maxHp = Math.floor(member.maxHp * 1.2)
+  member.hp = member.maxHp // heal to full
+
+  // Update active state
+  loadActiveFromTeam()
+  playerSpr.src = sprBack(st.player.id)
+  imgFallback(playerSpr, sprBackFallback(st.player.id))
+  playerSpr.classList.remove('evolution-flash')
+
+  $('player-name').textContent = st.player.name
+  renderSkills()
+  updateUI()
+
+  msg(`${pokemon.name}进化成了${evo.name}！`)
+  await sleep(1200)
+}
+
+export function acceptEvolution() {
+  // Handled via button onclick in showEvolutionPrompt
+}
+
+export function declineEvolution() {
+  // Handled via button onclick in showEvolutionPrompt
+}
+
+// ===================================================================
+// GYM LEADER DEFEATED
+// ===================================================================
 async function gymLeaderDefeated() {
   const leader = st.gymData.leader
 
-  // Save badge
   const gymProg = loadGymProgress()
   if (!gymProg.badges.includes(st.gymData.id)) {
     gymProg.badges.push(st.gymData.id)
     saveGymProgress(gymProg)
   }
 
-  // Check badge achievements
   if (gymProg.badges.length >= 1) tryAchievement('first_badge')
-  if (gymProg.badges.length >= 4) tryAchievement('four_badges')
-  if (gymProg.badges.length >= 8) tryAchievement('all_badges')
+  if (gymProg.badges.length >= 5) tryAchievement('four_badges')
+  if (gymProg.badges.length >= GYMS.length) tryAchievement('all_badges')
 
-  // Show post-defeat dialogue, then result (with champion message if all badges)
+  // Check perfect gym achievement
+  const tot = st.correct + st.wrong
+  const accuracy = tot > 0 ? Math.round(st.correct / tot * 100) : 0
+  if (accuracy === 100) tryAchievement('perfect_gym')
+
+  bgmStop()
+  bgmPlay('victory')
+
   showDialogue(leader.name, leader.avatar, leader.postDefeat, () => {
-    if (gymProg.badges.length >= 8) {
+    if (gymProg.badges.length >= GYMS.length) {
       showDialogue('大木博士', '🔮', [
         '恭喜你！你已经征服了所有道馆！',
-        '集合、函数、三角、数列、向量、概率、导数...',
+        '集合、函数、三角、数列、向量、概率、导数、排列组合、圆锥曲线...',
         '你已经掌握了高中数学的全部精髓！',
         '你是当之无愧的——数学冠军！！',
       ], () => {
@@ -1044,6 +1572,7 @@ function endTurn() {
   $('question-panel').style.display = 'none'
   $('skill-panel').style.display = 'grid'
   $('explain-box').style.display = 'none'
+  showSwitchBtn()
 
   ;['player', 'enemy'].forEach(side => {
     st.statusEffects[side] = st.statusEffects[side].filter(s => {
@@ -1090,12 +1619,21 @@ async function playAtk(isPlayer) {
 // ===================================================================
 function showResult(win) {
   clearInterval(st.timerIv); st.busy = true
+
   if (win) {
     tryAchievement('first_win')
     if (st.wrong === 0) tryAchievement('perfect')
+    // Check all team alive
+    if (st.team.every(m => m.hp > 0)) tryAchievement('team_alive')
+    // Check type master
+    if (st._allSuperEffective && st.correct > 0) tryAchievement('type_master')
     SFX.play('levelup')
+    bgmStop()
+    bgmPlay('victory')
   } else {
     SFX.play('gameover')
+    bgmStop()
+    bgmPlay('defeat_bgm')
   }
 
   const s = $('result-screen')
@@ -1117,6 +1655,9 @@ function showResult(win) {
       badgeEl.innerHTML = `<span class="badge-icon">${st.gymData.leader.badge}</span>获得${st.gymData.leader.badgeName}！`
       $('result-title').textContent = `${st.gymData.name}通关！`
     }
+  } else if (st.mode === 'endless') {
+    badgeEl.style.display = 'none'
+    $('result-title').textContent = `无尽模式 - 第${st.wave}波`
   } else {
     badgeEl.style.display = 'none'
     $('result-title').textContent = win ? '胜利！' : '战斗结束...'
@@ -1125,12 +1666,35 @@ function showResult(win) {
   const tot = st.correct + st.wrong
   const accuracy = tot > 0 ? Math.round(st.correct / tot * 100) : 0
 
-  // Animate stats counting up
   animateStatCount('stat-correct', st.correct)
   animateStatCount('stat-wrong', st.wrong)
   animateStatCount('stat-accuracy', accuracy, '%')
   animateStatCount('stat-streak', st.maxStreak)
   animateStatCount('stat-defeated', st.defeated)
+
+  // Endless mode extra stats
+  const waveRow = $('stat-wave-row')
+  const scoreRow = $('stat-score-row')
+  if (st.mode === 'endless') {
+    const score = st.defeated * 100 + st.correct * 50 + st.maxStreak * 200
+    st.endlessScore = score
+    if (waveRow) { waveRow.style.display = 'flex'; animateStatCount('stat-wave', st.wave) }
+    if (scoreRow) { scoreRow.style.display = 'flex'; animateStatCount('stat-score', score) }
+
+    // Save high score
+    const hs = getEndlessHighScore()
+    if (score > hs) {
+      setEndlessHighScore(score)
+      const nrEl = $('new-record')
+      nrEl.style.display = 'block'
+      nrEl.textContent = '🎉 新纪录！'
+    } else {
+      $('new-record').style.display = 'none'
+    }
+  } else {
+    if (waveRow) waveRow.style.display = 'none'
+    if (scoreRow) scoreRow.style.display = 'none'
+  }
 
   // Topic breakdown
   const topicDiv = $('topic-stats')
@@ -1179,13 +1743,14 @@ function showResult(win) {
     } else {
       nrEl.style.display = 'none'
     }
-  } else {
+  } else if (st.mode !== 'endless') {
     $('new-record').style.display = 'none'
   }
 }
 
 function animateStatCount(id, target, suffix = '') {
   const el = $(id)
+  if (!el) return
   let current = 0
   const duration = 600
   const step = target / (duration / 16)
@@ -1207,6 +1772,8 @@ export function restartGame() {
   $('gym-map-screen').style.display = 'none'
   $('title-screen').style.display = 'flex'
   st.selectedIdx = -1
+  st.selectedTeam = []
+  st.team = []
   st.mode = 'quick'
   st.gymData = null
   st.isLeaderFight = false
@@ -1215,17 +1782,55 @@ export function restartGame() {
 }
 
 // ===================================================================
+// SETTINGS
+// ===================================================================
+export function openSettings() {
+  SFX.play('select')
+  const overlay = $('settings-overlay')
+  overlay.style.display = 'flex'
+  const settings = loadSettings()
+  $('bgm-toggle').checked = settings.bgm !== false
+  $('sfx-toggle').checked = settings.sfx !== false
+}
+
+export function closeSettings() {
+  SFX.play('select')
+  $('settings-overlay').style.display = 'none'
+}
+
+export function toggleBGM() {
+  const settings = loadSettings()
+  settings.bgm = $('bgm-toggle').checked
+  saveSettings(settings)
+  if (!settings.bgm) {
+    bgmStop()
+  }
+}
+
+export function toggleSFX() {
+  const settings = loadSettings()
+  settings.sfx = $('sfx-toggle').checked
+  saveSettings(settings)
+}
+
+function applySettings() {
+  const settings = loadSettings()
+  const bgmEl = $('bgm-toggle')
+  const sfxEl = $('sfx-toggle')
+  if (bgmEl) bgmEl.checked = settings.bgm !== false
+  if (sfxEl) sfxEl.checked = settings.sfx !== false
+}
+
+// ===================================================================
 // KEYBOARD SUPPORT
 // ===================================================================
 export function initKeyboard() {
   document.addEventListener('keydown', (e) => {
-    // Answer keys 1-4
     if (['1', '2', '3', '4'].includes(e.key)) {
       const btns = document.querySelectorAll('.answer-btn')
       const idx = parseInt(e.key) - 1
       if (btns[idx]) btns[idx].click()
     }
-    // Skill keys 1-4 (when skill panel is visible)
     const skillPanel = $('skill-panel')
     if (skillPanel && skillPanel.style.display !== 'none') {
       const skillBtns = skillPanel.querySelectorAll('.skill-btn')

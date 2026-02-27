@@ -267,4 +267,70 @@ export const GYMS = [
       '大木博士和超梦在这里等待着你...',
     ],
   },
+  {
+    id: 9,
+    name: '排列组合道馆',
+    topics: ['排列组合', '概率统计'],
+    maxDiff: 3,
+    trainers: 3,
+    trainerScale: 1.4,
+    enemyTypes: ['fighting', 'normal'],
+    leader: {
+      name: '数学博士 高斯',
+      avatar: '🔢',
+      pokemon: { name: '胡地', id: 65, type: 'psychic', lv: 55, hp: 320, atkPow: 40 },
+      skills: [
+        { name: '精神强念', type: 'psychic', power: 50, acc: 100 },
+        { name: '精神击破', type: 'psychic', power: 65, acc: 100 },
+      ],
+      preBattle: [
+        '哦？你到了排列组合道馆。',
+        '排列、组合、概率统计——这些是通往数学巅峰的阶梯。',
+        '让我的胡地来考验你的排列组合功底！',
+      ],
+      postDefeat: [
+        '了不起！你真的掌握了排列组合的精髓。',
+        '排列徽章是你的了，勇士！',
+      ],
+      badge: '🔣',
+      badgeName: '排列徽章',
+    },
+    intro: [
+      '排列组合道馆——在这里，每一种可能性都被精确计算。',
+      '数学博士高斯以精妙的组合学著称，小心他出题！',
+    ],
+  },
+  {
+    id: 10,
+    name: '圆锥曲线道馆',
+    topics: ['圆锥曲线', '参数方程'],
+    maxDiff: 3,
+    trainers: 3,
+    trainerScale: 1.5,
+    enemyTypes: ['dragon', 'fairy'],
+    leader: {
+      name: '几何大师 欧拉',
+      avatar: '🌀',
+      pokemon: { name: '快龙', id: 149, type: 'dragon', lv: 60, hp: 360, atkPow: 45 },
+      skills: [
+        { name: '龙爪', type: 'dragon', power: 42, acc: 95 },
+        { name: '逆鳞', type: 'dragon', power: 65, acc: 90 },
+      ],
+      preBattle: [
+        '欢迎来到圆锥曲线道馆，数学几何的最高殿堂。',
+        '椭圆、双曲线、抛物线……参数方程、极坐标……',
+        '你能解开几何之谜，驯服我的快龙吗？',
+      ],
+      postDefeat: [
+        '太惊人了！你的几何功力已超越了常人！',
+        '接受这枚曲线徽章，愿你的数学之路无限延伸！',
+      ],
+      badge: '〰️',
+      badgeName: '曲线徽章',
+    },
+    intro: [
+      '圆锥曲线道馆——曲线与方程在此交融，美丽而深邃。',
+      '几何大师欧拉精通一切曲线，他的快龙代表着无限可能！',
+    ],
+  },
 ]
