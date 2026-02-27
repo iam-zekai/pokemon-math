@@ -4,6 +4,7 @@ const ACHIEVEMENTS_KEY = 'pkmn_math_achievements'
 const SETTINGS_KEY = 'pkmn_math_settings'
 const GYM_KEY = 'pkmn_math_gyms'
 const ENDLESS_KEY = 'pkmn_math_endless'
+const STATS_KEY = 'pkmn_math_stats'
 
 export function loadBest() {
   try {
@@ -90,4 +91,80 @@ export function getEndlessHighScore() {
 
 export function setEndlessHighScore(score) {
   try { localStorage.setItem(ENDLESS_KEY, JSON.stringify(score)) } catch (e) { /* ignore */ }
+}
+
+// Global stats tracking
+export function loadStats() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STATS_KEY) || '{}')
+    return { totalQuestions: d.totalQuestions || 0, totalCorrect: d.totalCorrect || 0, totalBattles: d.totalBattles || 0 }
+  } catch (e) { return { totalQuestions: 0, totalCorrect: 0, totalBattles: 0 } }
+}
+
+export function saveStats(stats) {
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)) } catch (e) { /* ignore */ }
+}
+
+// Trainer rank system
+export const TRAINER_RANKS = [
+  { title: '新手训练师', minEXP: 0 },
+  { title: '初级训练师', minEXP: 100 },
+  { title: '中级训练师', minEXP: 300 },
+  { title: '高级训练师', minEXP: 600 },
+  { title: '精英训练师', minEXP: 1200 },
+  { title: '准冠军', minEXP: 2000 },
+  { title: '冠军', minEXP: 3500 },
+  { title: '传说训练师', minEXP: 5000 },
+]
+
+export function calcTrainerEXP(settings, stats, gymProgress, achievements, endlessScore) {
+  let exp = 0
+  exp += (settings.totalDefeated || 0) * 10
+  exp += (stats.totalCorrect || 0) * 2
+  exp += (gymProgress.badges || []).length * 100
+  exp += Object.keys(achievements || {}).length * 50
+  exp += endlessScore || 0
+  return exp
+}
+
+export function getTrainerRank(exp) {
+  let rank = TRAINER_RANKS[0]
+  let nextRank = TRAINER_RANKS[1]
+  for (let i = TRAINER_RANKS.length - 1; i >= 0; i--) {
+    if (exp >= TRAINER_RANKS[i].minEXP) {
+      rank = TRAINER_RANKS[i]
+      nextRank = TRAINER_RANKS[i + 1] || null
+      break
+    }
+  }
+  const lvl = TRAINER_RANKS.indexOf(rank) + 1
+  let progress = 1
+  if (nextRank) {
+    progress = (exp - rank.minEXP) / (nextRank.minEXP - rank.minEXP)
+  }
+  return { title: rank.title, level: lvl, progress: Math.min(1, progress), exp }
+}
+
+// Pokemon unlock system - required trainer level for each POKEMON index
+// [0]=皮卡丘, [1]=喷火龙, [2]=水箭龟, [3]=妙蛙花, [4]=超梦, [5]=耿鬼,
+// [6]=卡比兽, [7]=路卡利欧, [8]=沙奈朵, [9]=快龙, [10]=拉普拉斯,
+// [11]=太阳精灵, [12]=胡地, [13]=怪力, [14]=暴鲤龙
+export const POKEMON_UNLOCK_MAP = [1, 1, 1, 2, 8, 4, 3, 4, 6, 7, 5, 5, 6, 2, 3]
+
+export function getUnlockedPokemon(trainerLevel) {
+  return POKEMON_UNLOCK_MAP.reduce((arr, reqLv, i) => {
+    if (reqLv <= trainerLevel) arr.push(i)
+    return arr
+  }, [])
+}
+
+const LAST_RANK_KEY = 'pkmn_math_last_rank'
+
+export function getLastSeenRank() {
+  try { return parseInt(localStorage.getItem(LAST_RANK_KEY) || '0') || 0 }
+  catch (e) { return 0 }
+}
+
+export function setLastSeenRank(level) {
+  try { localStorage.setItem(LAST_RANK_KEY, String(level)) } catch (e) { /* ignore */ }
 }

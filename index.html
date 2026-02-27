@@ -3,33 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="description" content="Pokemon Math Battle - 宝可梦数学对战游戏，用数学知识击败野生宝可梦！">
+<meta name="description" content="宝可梦数学对战 - 用数学知识击败野生宝可梦！">
 <meta name="theme-color" content="#1a1a2e">
-<meta property="og:title" content="Pokemon Math Battle">
+<meta property="og:title" content="宝可梦数学对战">
 <meta property="og:description" content="用数学知识击败野生宝可梦！高中数学对战游戏">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;700&display=swap" rel="stylesheet">
-<title>Pokemon Math Battle</title>
+<title>宝可梦数学对战</title>
 </head>
 <body>
 
 <div id="game">
   <div id="title-screen">
     <div class="title-sprites" id="title-sprites">
-      <img src="" alt="Pikachu" data-id="25">
-      <img src="" alt="Charizard" data-id="6">
-      <img src="" alt="Mewtwo" data-id="150">
+      <img src="" alt="皮卡丘" data-id="25">
+      <img src="" alt="喷火龙" data-id="6">
+      <img src="" alt="超梦" data-id="150">
     </div>
-    <h1>POKEMON<br>MATH BATTLE</h1>
+    <h1>宝可梦<br>数学对战</h1>
     <p class="subtitle">高中数学对战！</p>
-    <p class="best-score" id="best-score"></p>
-    <p class="achievement-summary">成就: <span id="achievement-count">0/18</span></p>
+    <div class="profile-panel" id="profile-panel"></div>
     <div class="title-buttons">
-      <button class="start-btn" onclick="showSelectScreen()">QUICK BATTLE</button>
-      <button class="start-btn endless-btn" onclick="startEndless()">ENDLESS MODE</button>
-      <button class="start-btn gym-btn" onclick="showGymMap()">GYM CHALLENGE</button>
+      <button class="start-btn" onclick="showSelectScreen()">快速对战</button>
+      <button class="start-btn endless-btn" onclick="startEndless()">无尽模式</button>
+      <button class="start-btn gym-btn" onclick="showGymMap()">道馆挑战</button>
     </div>
     <div id="high-score" class="high-score">无尽最高分: <span id="high-score-value">0</span></div>
     <div class="badge-case" id="badge-case"></div>
@@ -59,7 +58,7 @@
   <div id="battle-scene">
     <div class="battle-bg" id="battle-bg">
       <div class="difficulty-badge" id="difficulty-badge">普通</div>
-      <div class="level-indicator" id="level-indicator">ROUND 1</div>
+      <div class="level-indicator" id="level-indicator">第1回合</div>
       <div class="streak-indicator" id="streak-indicator"></div>
       <div class="ground-enemy"></div>
       <div class="ground-player"></div>
@@ -89,6 +88,7 @@
       <img class="enemy-pokemon" id="enemy-sprite" src="" alt="">
       <img class="player-pokemon" id="player-sprite" src="" alt="">
       <canvas id="fx-canvas"></canvas>
+      <button class="quit-icon-btn battle-settings" onclick="quitBattle()">&#10005;</button>
       <button class="settings-icon-btn battle-settings" onclick="openSettings()">&#9881;</button>
     </div>
     <div id="dialogue-overlay">
@@ -157,6 +157,25 @@
         <label class="toggle"><input type="checkbox" id="sfx-toggle" checked onchange="toggleSFX()"><span class="slider"></span></label>
       </div>
       <button onclick="closeSettings()" class="close-settings-btn">关闭</button>
+    </div>
+  </div>
+
+  <div id="unlock-overlay" class="unlock-overlay" style="display:none">
+    <div class="unlock-panel">
+      <h3>🎉 新宝可梦解锁！</h3>
+      <div class="unlock-list"></div>
+      <button class="unlock-close-btn">太好了！</button>
+    </div>
+  </div>
+
+  <div id="quit-overlay" class="quit-overlay" style="display:none">
+    <div class="quit-panel">
+      <h3>确定退出？</h3>
+      <p>当前战斗进度将不会保存</p>
+      <div class="quit-buttons">
+        <button onclick="confirmQuit()" class="quit-confirm-btn">退出战斗</button>
+        <button onclick="cancelQuit()" class="quit-cancel-btn">继续战斗</button>
+      </div>
     </div>
   </div>
 

@@ -5,7 +5,7 @@ import { GYMS } from './gyms.js'
 import { EVENTS, pickRandomEvent } from './events.js'
 import { SFX } from './sound.js'
 import { FX } from './fx.js'
-import { loadBest, saveBest, loadSettings, saveSettings, saveAchievement, ACHIEVEMENT_DEFS, loadAchievements, loadGymProgress, saveGymProgress, getEndlessHighScore, setEndlessHighScore } from './storage.js'
+import { loadBest, saveBest, loadSettings, saveSettings, saveAchievement, ACHIEVEMENT_DEFS, loadAchievements, loadGymProgress, saveGymProgress, getEndlessHighScore, setEndlessHighScore, loadStats, saveStats, calcTrainerEXP, getTrainerRank, TRAINER_RANKS, POKEMON_UNLOCK_MAP, getUnlockedPokemon, getLastSeenRank, setLastSeenRank } from './storage.js'
 import { shuffle, randInt, sleep } from './utils.js'
 
 // BGM integration - will be set if bgm.js is available
@@ -30,7 +30,7 @@ let st = {
   round: 1, streak: 0, maxStreak: 0,
   correct: 0, wrong: 0, defeated: 0,
   curSkill: null, curQ: null, busy: false, selectedIdx: -1,
-  timerIv: null, qBank: [],
+  timerIv: null, skillTimerIv: null, qBank: [],
   topicStats: {},
   statusEffects: { player: [], enemy: [] },
   difficulty: 'normal',
@@ -89,7 +89,7 @@ function showMiss(target) {
   const c = $('battle-bg')
   const el = document.createElement('div')
   el.className = 'damage-num miss'
-  el.textContent = 'MISS'
+  el.textContent = '未命中'
   if (target === 'enemy') { el.style.right = '55px'; el.style.top = '35px' }
   else { el.style.left = '55px'; el.style.bottom = '85px' }
   c.appendChild(el)
@@ -236,6 +236,12 @@ function handleChallengeQuestion() {
           else if (b === btn && opt !== q.a) b.classList.add('wrong')
         })
 
+        // Track challenge question stats
+        const cgs = loadStats()
+        cgs.totalQuestions++
+        if (opt === q.a) cgs.totalCorrect++
+        saveStats(cgs)
+
         if (opt === q.a) {
           SFX.play('correct')
           const heal = Math.floor(st.pMaxHP * 0.25)
@@ -310,21 +316,11 @@ function updateTeamStatus() {
 // SCREENS
 // ===================================================================
 export function showBestScore() {
-  const b = loadBest()
-  const el = $('best-score')
-  if (b.defeated > 0) {
-    el.innerHTML = `最佳记录: 击败<span>${b.defeated}</span> 连击<span>${b.streak}</span> 正确率<span>${b.accuracy}%</span>`
-  } else {
-    el.textContent = '尚无战绩记录'
-  }
+  // Render profile panel
+  renderProfilePanel()
 
-  // Show achievement count
-  const achs = loadAchievements()
-  const unlocked = Object.keys(achs).length
-  const achEl = $('achievement-count')
-  if (achEl) {
-    achEl.textContent = `${unlocked}/${ACHIEVEMENT_DEFS.length}`
-  }
+  // Check for newly unlocked Pokemon
+  checkNewUnlocks()
 
   // Show badge case
   const badgeCase = $('badge-case')
@@ -352,10 +348,163 @@ export function showBestScore() {
   bgmPlay('title')
 }
 
+function renderProfilePanel() {
+  const panel = $('profile-panel')
+  if (!panel) return
+
+  const stats = loadStats()
+  const settings = loadSettings()
+  const gymProg = loadGymProgress()
+  const achs = loadAchievements()
+  const endlessHS = getEndlessHighScore()
+
+  const exp = calcTrainerEXP(settings, stats, gymProg, achs, endlessHS)
+  const rank = getTrainerRank(exp)
+
+  // Accuracy
+  const accuracy = stats.totalQuestions > 0
+    ? Math.round(stats.totalCorrect / stats.totalQuestions * 100)
+    : -1
+
+  // Skill assessment
+  let assessment
+  if (stats.totalQuestions === 0) {
+    assessment = '尚未开始冒险'
+  } else if (accuracy >= 90) {
+    assessment = '数学天才！几乎无人能敌'
+  } else if (accuracy >= 80) {
+    assessment = '实力雄厚，基础扎实'
+  } else if (accuracy >= 70) {
+    assessment = '稳步提升中，继续努力'
+  } else if (accuracy >= 60) {
+    assessment = '有潜力，需要多练习'
+  } else {
+    assessment = '勇气可嘉，加油！'
+  }
+
+  // Next step recommendation
+  const badges = gymProg.badges || []
+  const totalDef = settings.totalDefeated || 0
+  let nextStep
+  if (totalDef === 0) {
+    nextStep = '开始你的第一场快速对战！'
+  } else if (badges.length === 0) {
+    nextStep = '尝试挑战第一个道馆！'
+  } else if (badges.length < GYMS.length) {
+    const nextGym = GYMS.find(g => !badges.includes(g.id))
+    nextStep = nextGym ? `挑战下一个道馆: ${nextGym.name}` : '继续道馆挑战！'
+  } else if (!achs['endless_10']) {
+    nextStep = '挑战无尽模式第10波！'
+  } else if (!achs['endless_20']) {
+    nextStep = '无尽模式挑战第20波！'
+  } else {
+    const missing = ACHIEVEMENT_DEFS.find(a => !achs[a.id])
+    nextStep = missing ? `解锁成就: ${missing.name}` : '你已是传说！试试刷新最高分吧！'
+  }
+
+  // Avatar: use first Pokemon from usedPokemon, or default
+  const avatarId = settings.usedPokemon.length > 0 ? settings.usedPokemon[0] : 25
+  const avatarSrc = spr(avatarId)
+
+  const achCount = Object.keys(achs).length
+  const progressPct = Math.round(rank.progress * 100)
+
+  panel.innerHTML = `
+    <div class="profile-header">
+      <img class="profile-avatar" src="${avatarSrc}" alt="">
+      <div class="profile-rank-info">
+        <div class="profile-rank-title">Lv.${rank.level} ${rank.title}</div>
+        <div class="profile-exp-bar"><div class="profile-exp-fill" style="width:${progressPct}%"></div></div>
+        <div class="profile-rank-sub">${rank.level < TRAINER_RANKS.length ? `经验 ${exp} / ${TRAINER_RANKS[rank.level].minEXP}` : `经验 ${exp} MAX`}</div>
+      </div>
+    </div>
+    <div class="profile-stats">
+      <div class="profile-stat"><span class="profile-stat-val">${stats.totalQuestions}</span><span class="profile-stat-label">答题</span></div>
+      <div class="profile-stat"><span class="profile-stat-val">${accuracy >= 0 ? accuracy + '%' : '--'}</span><span class="profile-stat-label">正确率</span></div>
+      <div class="profile-stat"><span class="profile-stat-val">${totalDef}</span><span class="profile-stat-label">击败</span></div>
+      <div class="profile-stat"><span class="profile-stat-val">${achCount}/${ACHIEVEMENT_DEFS.length}</span><span class="profile-stat-label">成就</span></div>
+    </div>
+    <div class="profile-footer">
+      <div class="profile-assessment">💬 ${assessment}</div>
+      <div class="profile-nextstep">👉 ${nextStep}</div>
+    </div>
+  `
+}
+
+function checkNewUnlocks() {
+  const stats = loadStats()
+  const settings = loadSettings()
+  const gymProg = loadGymProgress()
+  const achs = loadAchievements()
+  const endlessHS = getEndlessHighScore()
+  const exp = calcTrainerEXP(settings, stats, gymProg, achs, endlessHS)
+  const rank = getTrainerRank(exp)
+
+  const lastRank = getLastSeenRank()
+  if (rank.level <= lastRank) {
+    // First time: set lastSeenRank to current level
+    if (lastRank === 0) setLastSeenRank(rank.level)
+    return
+  }
+
+  // Find newly unlocked Pokemon (between lastRank+1 and current level)
+  const newIndices = []
+  POKEMON_UNLOCK_MAP.forEach((reqLv, i) => {
+    if (reqLv > lastRank && reqLv <= rank.level) newIndices.push(i)
+  })
+
+  setLastSeenRank(rank.level)
+  if (newIndices.length > 0) showUnlockNotification(newIndices)
+}
+
+function showUnlockNotification(indices) {
+  const overlay = $('unlock-overlay')
+  if (!overlay) return
+  overlay.style.display = 'flex'
+
+  const list = indices.map(i => {
+    const p = POKEMON[i]
+    return `<div class="unlock-item">
+      <img src="${spr(p.id)}" alt="${p.name}">
+      <span>${p.name}</span>
+    </div>`
+  }).join('')
+
+  overlay.querySelector('.unlock-list').innerHTML = list
+  overlay.querySelector('.unlock-close-btn').onclick = () => {
+    SFX.play('select')
+    overlay.style.display = 'none'
+  }
+}
+
 function renderSelectGrid() {
   const g = $('pokemon-grid'); g.innerHTML = ''
+  const stats = loadStats()
+  const settings = loadSettings()
+  const gymProg = loadGymProgress()
+  const achs = loadAchievements()
+  const endlessHS = getEndlessHighScore()
+  const exp = calcTrainerEXP(settings, stats, gymProg, achs, endlessHS)
+  const rank = getTrainerRank(exp)
+  const unlocked = getUnlockedPokemon(rank.level)
+
   POKEMON.forEach((p, i) => {
     const d = document.createElement('div'); d.className = 'pokemon-card'
+    const isLocked = !unlocked.includes(i)
+
+    if (isLocked) {
+      d.classList.add('locked')
+      const cardImg = document.createElement('img')
+      cardImg.src = spr(p.id)
+      cardImg.alt = p.name
+      imgFallback(cardImg, sprFallback(p.id))
+      d.appendChild(cardImg)
+      d.insertAdjacentHTML('beforeend', `<span class="name">${p.name}</span>
+        <span class="lock-badge">🔒 Lv.${POKEMON_UNLOCK_MAP[i]}</span>`)
+      g.appendChild(d)
+      return
+    }
+
     // Check if already selected in team
     const teamIdx = st.selectedTeam.indexOf(i)
     if (teamIdx >= 0) {
@@ -532,6 +681,17 @@ export function setDifficulty(diff) {
 }
 
 function selPoke(i) {
+  // Guard against locked Pokemon
+  const stats = loadStats()
+  const settings = loadSettings()
+  const gymProg = loadGymProgress()
+  const achs = loadAchievements()
+  const endlessHS = getEndlessHighScore()
+  const exp = calcTrainerEXP(settings, stats, gymProg, achs, endlessHS)
+  const rank = getTrainerRank(exp)
+  const unlocked = getUnlockedPokemon(rank.level)
+  if (!unlocked.includes(i)) return
+
   const existing = st.selectedTeam.indexOf(i)
   if (existing >= 0) {
     // Deselect
@@ -627,6 +787,7 @@ export function startBattle() {
     bgmPlay('battle')
     showDialogue('旁白', '📖', st.gymData.intro, () => {
       msg(`${st.player.name}，就决定是你了！`)
+      startSkillTimer()
     })
   } else if (st.mode === 'endless') {
     $('difficulty-badge').textContent = '无尽模式'
@@ -636,6 +797,7 @@ export function startBattle() {
     updateUI()
     bgmPlay('battle')
     msg(`无尽模式开始！第${st.wave}波！`)
+    startSkillTimer()
   } else {
     const diff = DIFFICULTY[st.difficulty]
     $('difficulty-badge').textContent = diff.label
@@ -644,6 +806,7 @@ export function startBattle() {
     updateUI()
     bgmPlay('battle')
     msg(`${st.player.name}，就决定是你了！`)
+    startSkillTimer()
   }
 }
 
@@ -735,11 +898,11 @@ function spawnEnemy() {
   setTimeout(() => eSprite.classList.remove('enter-anim'), 400)
 
   if (st.mode === 'endless') {
-    $('level-indicator').textContent = `WAVE ${st.wave}`
+    $('level-indicator').textContent = `第${st.wave}波`
   } else if (st.mode === 'gym') {
     $('level-indicator').textContent = `训练师 ${st.gymStep + 1}/${st.gymData.trainers}`
   } else {
-    $('level-indicator').textContent = `ROUND ${st.round}`
+    $('level-indicator').textContent = `第${st.round}回合`
   }
   $('player-level').textContent = `Lv.${5 + st.defeated * 3}`
 }
@@ -781,6 +944,7 @@ function spawnGymLeader() {
 
   showDialogue(leader.name, leader.avatar, leader.preBattle, () => {
     msg(`馆主${leader.name}发起了挑战！`)
+    startSkillTimer()
   })
 }
 
@@ -837,6 +1001,7 @@ function renderSkills() {
 // ===================================================================
 export function switchPokemon() {
   if (st.busy) return
+  clearSkillTimer()
   SFX.play('select')
 
   const overlay = $('switch-overlay')
@@ -867,6 +1032,7 @@ export function switchPokemon() {
 export function cancelSwitch() {
   SFX.play('select')
   $('switch-overlay').style.display = 'none'
+  startSkillTimer()
 }
 
 async function doSwitch(newIdx) {
@@ -926,6 +1092,7 @@ async function doSwitch(newIdx) {
   showSwitchBtn()
   msg('选择技能！')
   updateUI()
+  startSkillTimer()
 }
 
 function performSwitch(newIdx) {
@@ -1057,6 +1224,7 @@ function getQuestion() {
 // ===================================================================
 function useSkill(idx) {
   if (st.busy) return
+  clearSkillTimer()
   SFX.play('select')
   st.curSkill = st.player.skills[idx]
   msg(`${st.player.name}使用${st.curSkill.name}！答对才能命中！`)
@@ -1130,6 +1298,12 @@ function submitAnswer(chosen, btn) {
   const topic = st.curQ.cat
   if (!st.topicStats[topic]) st.topicStats[topic] = { correct: 0, total: 0 }
   st.topicStats[topic].total++
+
+  // Track global stats
+  const gs = loadStats()
+  gs.totalQuestions++
+  if (chosen === st.curQ.answer) gs.totalCorrect++
+  saveStats(gs)
 
   if (chosen === st.curQ.answer) {
     st.topicStats[topic].correct++
@@ -1583,6 +1757,40 @@ function endTurn() {
 
   msg('选择技能！')
   updateUI()
+  startSkillTimer()
+}
+
+function startSkillTimer() {
+  clearInterval(st.skillTimerIv)
+  const dur = 15 // seconds to pick a skill
+  const bar = $('timer-bar')
+  const con = $('timer-container')
+  con.style.display = 'block'; bar.style.width = '100%'
+  bar.style.backgroundColor = '#6366f1'
+  bar.classList.remove('timer-pulse')
+  const t0 = Date.now()
+  st.skillTimerIv = setInterval(() => {
+    const rem = Math.max(0, dur - (Date.now() - t0) / 1000)
+    bar.style.width = (rem / dur * 100) + '%'
+    if (rem <= dur * 0.3) {
+      bar.style.backgroundColor = '#ef4444'
+      bar.classList.add('timer-pulse')
+    } else {
+      bar.style.backgroundColor = '#6366f1'
+      bar.classList.remove('timer-pulse')
+    }
+    if (rem <= 0) {
+      clearInterval(st.skillTimerIv)
+      con.style.display = 'none'
+      // Auto-select first skill on timeout
+      if (!st.busy) useSkill(0)
+    }
+  }, 50)
+}
+
+function clearSkillTimer() {
+  clearInterval(st.skillTimerIv)
+  $('timer-container').style.display = 'none'
 }
 
 // ===================================================================
@@ -1618,7 +1826,12 @@ async function playAtk(isPlayer) {
 // RESULT
 // ===================================================================
 function showResult(win) {
-  clearInterval(st.timerIv); st.busy = true
+  clearInterval(st.timerIv); clearSkillTimer(); st.busy = true
+
+  // Track battle count
+  const battleStats = loadStats()
+  battleStats.totalBattles++
+  saveStats(battleStats)
 
   if (win) {
     tryAchievement('first_win')
@@ -1779,6 +1992,26 @@ export function restartGame() {
   st.isLeaderFight = false
   if (fx) fx.clear()
   showBestScore()
+}
+
+export function quitBattle() {
+  SFX.play('select')
+  const overlay = $('quit-overlay')
+  overlay.style.display = 'flex'
+}
+
+export function confirmQuit() {
+  $('quit-overlay').style.display = 'none'
+  clearInterval(st.timerIv)
+  clearSkillTimer()
+  st.busy = true
+  bgmStop()
+  restartGame()
+}
+
+export function cancelQuit() {
+  SFX.play('select')
+  $('quit-overlay').style.display = 'none'
 }
 
 // ===================================================================
